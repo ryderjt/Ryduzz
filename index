@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ryduzz / Juez - CapCut Creator</title>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <!-- Font Awesome for Social Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-p1CmXQZbexhdEM6OVeUYH9Xp5C2+XgylfgV1zRzX1pT0uPDEhKxTXh+8z2pYQ3r7C5m0OS6rMvGkL6Tbt5+/mA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    /* Basic Reset & Font */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      font-family: 'Press Start 2P', cursive;
+      color: #111;
+    }
+    /* Manga-style Panel */
+    .panel {
+      border: 4px solid #000;
+      background: #fff;
+      margin: 2rem auto;
+      padding: 2rem;
+      max-width: 640px;
+      box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+      position: relative;
+    }
+    /* Speech Bubble */
+    .speech {
+      border: 3px solid #000;
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1rem;
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    .speech::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 2rem;
+      border-width: 20px 12px 0;
+      border-style: solid;
+      border-color: #fff transparent;
+    }
+    /* Header Text */
+    h1 {
+      margin: 0.5rem 0;
+      font-size: 2rem;
+      text-align: center;
+      text-shadow: 2px 2px #ccc;
+    }
+    p.role {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    /* Social Icons */
+    .socials {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+    .socials a {
+      font-size: 2rem;
+      color: #000;
+      transition: transform 0.2s;
+    }
+    .socials a:hover {
+      transform: scale(1.2);
+    }
+    /* Dropdown Portfolio */
+    details {
+      border: 3px solid #000;
+      background: #fff;
+      padding: 1rem;
+      margin: 2rem auto;
+      max-width: 640px;
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.2);
+    }
+    summary {
+      font-size: 1.2rem;
+      cursor: pointer;
+      outline: none;
+    }
+    details[open] {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    ul.portfolio {
+      list-style: none;
+      padding: 0;
+      margin-top: 1rem;
+    }
+    ul.portfolio li {
+      margin: 0.75rem 0;
+    }
+    ul.portfolio li a {
+      text-decoration: none;
+      color: #111;
+      border-bottom: 2px solid #000;
+      padding-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <div class="speech">
+      <p>“Ready for your next CapCut adventure? Let’s make magic!”</p>
+    </div>
+    <h1>Ryduzz / Juez</h1>
+    <p class="role">CapCut Template Creator</p>
+    <div class="socials">
+      <a href="https://instagram.com/yourusername" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://youtube.com/yourchannel" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+      <a href="https://tiktok.com/@yourusername" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+      <a href="https://twitter.com/yourusername" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+    </div>
+  </div>
+  <details>
+    <summary>My Portfolio</summary>
+    <ul class="portfolio">
+      <li><a href="#">3 Heads Template</a></li>
+      <li><a href="#">Meet the GANG Intro</a></li>
+      <li><a href="#">MONEY TALKS</a></li>
+      <!-- Add more items here -->
+    </ul>
+  </details>
+</body>
+</html>
