@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Weekly Planner</title>
+  <style>
+    /* THEME TOKENS */
+    :root{
+      /* dark (blue/black) */
+      --bg: #0f172a;         /* slate-900 */
+      --panel: #111827;      /* gray-900 */
+      --card: #0b1220;       /* deep slate */
+      --text: #e5e7eb;       /* gray-200 */
+      --muted: #94a3b8;      /* slate-400 */
+      --accent: #4f46e5;     /* indigo-600 */
+      --accent-2: #22c55e;   /* green-500 */
+      --danger: #ef4444;     /* red-500 */
+      --ring: #7c3aed33;     /* violet ring (20%) */
+      --border: #ffffff1a;
+      --task-bg: #0b1020;
+      --link: #a5b4fc;
+      --gradient-a: #1f2937;
+      --gradient-b: #0b1020;
+      --gradient-c: #05070c;
+      --button-grad-a: #6366f1; /* primary button */
+      --button-grad-b: #4f46e5;
+      --input-bg: #0b1020;
+      --input-border: #ffffff1f;
+      --header-sep: #ffffff15;
+    }
+
+    /* light (grey/white) overrides */
+    [data-theme="light"]{
+      --bg: #f4f4f5;         /* zinc-100 */
+      --panel: #ffffff;      /* white */
+      --card: #fafafa;       /* near-white */
+      --text: #111827;       /* gray-900 */
+      --muted: #6b7280;      /* gray-500 */
+      --accent: #52525b;     /* zinc-600 */
+      --accent-2: #16a34a;   /* green-600 */
+      --danger: #dc2626;     /* red-600 */
+      --ring: #6b728033;     /* gray ring (20%) */
+      --border: #e5e7eb;
+      --task-bg: #ffffff;
+      --link: #2563eb;       /* blue-600 */
+      --gradient-a: #ffffff;
+      --gradient-b: #ffffff;
+      --gradient-c: #f4f4f5;
+      --button-grad-a: #9ca3af; /* neutral */
+      --button-grad-b: #6b7280;
+      --input-bg: #ffffff;
+      --input-border: #e5e7eb;
+      --header-sep: #e5e7eb;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 800px at 50% -20%, var(--gradient-a), var(--gradient-b) 65%, var(--gradient-c) 100%), var(--bg);
+      color:var(--text);
+      display:flex; flex-direction:column;
+    }
+    header{
+      position:sticky; top:0; z-index:5; backdrop-filter:saturate(140%) blur(6px);
+      background: linear-gradient(180deg, color-mix(in hsl, var(--bg), transparent 15%), color-mix(in hsl, var(--bg), transparent 45%), transparent);
+      border-bottom: 1px solid var(--header-sep);
+      text-align:center; padding:24px 16px 10px;
+    }
+    header h1{ margin:0; font-size: clamp(20px, 2.4vw, 28px); font-weight:700; letter-spacing:.3px }
+    header .sub{ margin-top:6px; font-size:13px; color:var(--muted) }
+
+    .topbar{ display:flex; justify-content:center; gap:16px; align-items:center; margin-top:10px; }
+    .theme-toggle{ display:inline-flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); }
+    .switch{ position:relative; width:48px; height:26px; }
+    .switch input{ opacity:0; width:0; height:0 }
+    .slider{ position:absolute; inset:0; border-radius:999px; background:var(--border); transition:background .2s }
+    .slider::before{ content:""; position:absolute; height:20px; width:20px; left:3px; top:3px; border-radius:50%; background:var(--panel); border:1px solid var(--border); transition: transform .2s }
+    .switch input:checked + .slider{ background: color-mix(in hsl, var(--accent), white 60%) }
+    .switch input:checked + .slider::before{ transform: translateX(22px) }
+
+    .shell{ width:min(1200px, 96%); margin:18px auto 28px; }
+
+    .composer{
+      display:flex; gap:12px; flex-wrap:wrap; align-items:center; background:linear-gradient(180deg, var(--panel), var(--card));
+      border:1px solid var(--border); border-radius:14px; padding:12px; box-shadow: 0 8px 30px #00000020;
+    }
+    .composer input[type="text"], .composer select{
+      flex:1 1 220px; padding:12px 14px; border-radius:10px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text);
+      outline:none; transition:border-color .15s, box-shadow .15s;
+    }
+    .composer input[type="text"]:focus, .composer select:focus{ border-color:var(--accent); box-shadow:0 0 0 4px var(--ring) }
+    .composer button{
+      padding:12px 16px; border-radius:12px; background:linear-gradient(180deg, var(--button-grad-a), var(--button-grad-b)); color:#fff; border:none; font-weight:700; cursor:pointer;
+      transition: transform .05s ease, filter .2s ease; white-space:nowrap;
+    }
+    .composer button:active{ transform: translateY(1px) }
+    .composer .pill{ font-size:12px; color:var(--muted) }
+
+    .board{ margin-top:18px; }
+    .columns{
+      display:grid; gap:12px; align-items:start; justify-items:stretch;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+    }
+    @media (min-width:1100px){ .columns{ grid-template-columns: repeat(7, 1fr); } }
+    @media (max-width:900px){ .columns{ grid-template-columns: repeat(2, minmax(220px, 1fr)); } }
+    @media (max-width:620px){ .columns{ grid-template-columns: 1fr; } }
+
+    .column{
+      background:linear-gradient(180deg, var(--panel), var(--card)); padding:10px; border-radius:14px; border:1px solid var(--border);
+      min-height:220px; box-shadow: 0 8px 24px #00000025;
+    }
+    .col-head{ display:flex; justify-content:space-between; align-items:center; margin:4px 4px 8px; }
+    .col-head h3{ margin:0; font-size:14px; letter-spacing:.6px; text-transform:uppercase; color:var(--muted) }
+    .badge{ font-size:12px; color:var(--muted); background:color-mix(in hsl, var(--border), var(--panel) 30%); padding:4px 8px; border-radius:999px }
+    .today h3{ color: color-mix(in hsl, var(--accent), white 30%); }
+
+    .list{ list-style:none; margin:0; padding:6px; border:1px dashed var(--border); border-radius:12px; min-height:160px }
+    .list.drag-over{ border-color:var(--accent) }
+
+    .task{
+      display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background:var(--task-bg); border:1px solid var(--border);
+      margin:8px 0; cursor:grab; user-select:none;
+    }
+    .task:active{ cursor:grabbing }
+    .task.done{ opacity:.65; text-decoration:line-through }
+
+    .task .title{ flex:1; }
+    .task .controls{ display:flex; gap:6px }
+    .icon-btn{
+      border:none; background:color-mix(in hsl, var(--border), var(--panel) 30%); color:var(--text); border-radius:10px; padding:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+    }
+    .icon-btn:hover{ filter:brightness(1.05) }
+    .icon-btn.danger{ background: color-mix(in hsl, var(--danger), white 85%) }
+    .icon-btn.success{ background: color-mix(in hsl, var(--accent-2), white 80%) }
+
+    .small{ font-size:12px; color:var(--muted) }
+    .hint{ margin:12px 2px 0; color:var(--muted); font-size:12px }
+
+    footer{ text-align:center; color:var(--muted); font-size:12px; padding:24px 0 40px }
+    .future-row{ margin-top:12px; }
+    a.link{ color:var(--link); text-decoration:none }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="today"></h1>
+    <div class="sub" id="weekRange"></div>
+    <div class="topbar">
+      <div class="theme-toggle">
+        <span>Dark</span>
+        <label class="switch" aria-label="Toggle light theme">
+          <input id="themeToggle" type="checkbox" />
+          <span class="slider"></span>
+        </label>
+        <span>Light</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <section class="composer" aria-labelledby="addTaskLabel">
+      <label id="addTaskLabel" class="pill" for="taskText">Add a task</label>
+      <input id="taskText" type="text" placeholder="New task... (e.g., Prep slides, Gym, Call Alex)" />
+      <select id="taskDay" aria-label="Choose a day">
+        <!-- options injected by JS -->
+      </select>
+      <button id="addBtn" type="button">Add</button>
+      <span class="pill">Tasks are saved to this browser automatically</span>
+    </section>
+
+    <section class="board" aria-label="Weekly board">
+      <div id="columns" class="columns"><!-- 7 day columns injected --></div>
+      <!-- Future Tasks sits under week display -->
+      <div id="futureRow" class="future-row"></div>
+      <p class="hint">Tip: drag tasks between days (or into <strong>Future Tasks</strong>). Click ✓ to toggle done, and 🗑 to delete.</p>
+    </section>
+  </div>
+
+  <footer>
+    <span class="small">Weekly Planner • Single-file HTML • No frameworks</span>
+  </footer>
+
+  <script>
+  (function(){
+    const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const FUTURE = "Future Tasks";
+    const STORAGE_KEY = "weekly_planner_v1";
+    const THEME_KEY = "planner_theme"; // 'dark' | 'light'
+
+    /*** Utilities ***/
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+    const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+    /*** Date header ***/
+    function renderHeader(){
+      const now = new Date();
+      const heading = now.toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      $("#today").textContent = heading;
+
+      // Compute week range (Sun - Sat) for the current date
+      const start = new Date(now); start.setDate(now.getDate() - now.getDay());
+      const end = new Date(start); end.setDate(start.getDate() + 6);
+      const fmt = (d) => d.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+      $("#weekRange").textContent = `${fmt(start)} – ${fmt(end)}`;
+    }
+
+    /*** State ***/
+    function blankState(){
+      const obj = {};
+      for(const d of DAYS) obj[d] = [];
+      obj[FUTURE] = [];
+      return obj;
+    }
+
+    function load(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || blankState(); }
+      catch(e){ return blankState(); }
+    }
+    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    let state = load();
+
+    /*** DOM builders ***/
+    function buildDayOptions(){
+      const sel = $("#taskDay");
+      sel.innerHTML = "";
+      for(const d of DAYS) sel.append(new Option(d, d));
+      sel.append(new Option(FUTURE, FUTURE));
+      sel.value = DAYS[new Date().getDay()];
+    }
+
+    function buildColumns(){
+      const wrap = document.getElementById("columns");
+      wrap.innerHTML = "";
+      const todayIdx = new Date().getDay();
+      for(const [i, day] of DAYS.entries()){
+        wrap.append(column(day, i===todayIdx));
+      }
+      const futureWrap = document.getElementById("futureRow");
+      if(futureWrap){
+        futureWrap.innerHTML = "";
+        futureWrap.append(column(FUTURE, false));
+      }
+    }
+
+    function column(day, isToday){
+      const col = document.createElement("div");
+      col.className = "column" + (isToday ? " today" : "");
+      col.dataset.day = day;
+
+      const head = document.createElement("div"); head.className = "col-head";
+      const h3 = document.createElement("h3"); h3.textContent = day; head.append(h3);
+      const badge = document.createElement("span"); badge.className = "badge"; badge.dataset.badgeFor = day; badge.textContent = "0"; head.append(badge);
+
+      const list = document.createElement("ul"); list.className = "list"; list.dataset.day = day; list.setAttribute("aria-label", day + " tasks");
+      enableDrops(list);
+
+      col.append(head, list);
+      return col;
+    }
+
+    /*** Rendering ***/
+    function renderAll(){
+      for(const day of [...DAYS, FUTURE]) renderDay(day);
+    }
+
+    function renderDay(day){
+      const list = document.querySelector(`.list[data-day="${CSS.escape(day)}"]`);
+      if(!list) return;
+      list.innerHTML = "";
+      const tasks = state[day] || [];
+      for(const t of tasks){ list.append(taskItem(t, day)); }
+      const badge = document.querySelector(`.badge[data-badge-for="${CSS.escape(day)}"]`);
+      if(badge) badge.textContent = tasks.length;
+    }
+
+    function taskItem(task, day){
+      const li = document.createElement("li");
+      li.className = "task" + (task.done ? " done" : "");
+      li.draggable = true;
+      li.dataset.id = task.id; li.dataset.day = day;
+
+      li.addEventListener("dragstart", ev => {
+        li.classList.add("dragging");
+        ev.dataTransfer.setData("text/plain", JSON.stringify({ from: day, id: task.id }));
+      });
+      li.addEventListener("dragend", () => li.classList.remove("dragging"));
+
+      const chk = document.createElement("button");
+      chk.className = "icon-btn success"; chk.title = task.done ? "Mark as not done" : "Mark as done";
+      chk.textContent = "✓";
+      chk.addEventListener("click", () => { task.done = !task.done; save(); renderDay(day); });
+
+      const txt = document.createElement("div"); txt.className = "title"; txt.textContent = task.text;
+      txt.title = task.text;
+
+      const del = document.createElement("button"); del.className = "icon-btn danger"; del.title = "Delete task"; del.textContent = "🗑";
+      del.addEventListener("click", () => { removeTask(day, task.id); });
+
+      const ctr = document.createElement("div"); ctr.className = "controls"; ctr.append(chk, del);
+      li.append(chk, txt, ctr);
+      return li;
+    }
+
+    function removeTask(day, id){
+      state[day] = (state[day] || []).filter(t => t.id !== id);
+      save(); renderDay(day);
+    }
+
+    /*** DnD ***/
+    function enableDrops(listEl){
+      listEl.addEventListener("dragover", (ev) => { ev.preventDefault(); listEl.classList.add("drag-over"); });
+      listEl.addEventListener("dragleave", () => listEl.classList.remove("drag-over"));
+      listEl.addEventListener("drop", (ev) => {
+        ev.preventDefault(); listEl.classList.remove("drag-over");
+        try{
+          const payload = JSON.parse(ev.dataTransfer.getData("text/plain"));
+          moveTask(payload.from, listEl.dataset.day, payload.id);
+        }catch{ /* ignore */ }
+      });
+    }
+
+    function moveTask(fromDay, toDay, id){
+      if(!state[fromDay]) return;
+      const idx = state[fromDay].findIndex(t => t.id === id);
+      if(idx === -1) return;
+      const [task] = state[fromDay].splice(idx, 1);
+      state[toDay] = state[toDay] || [];
+      state[toDay].push(task); // append to end
+      save(); renderDay(fromDay); renderDay(toDay);
+    }
+
+    /*** Add task ***/
+    function onAdd(){
+      const text = $("#taskText").value.trim();
+      const day = $("#taskDay").value;
+      if(!text) { $("#taskText").focus(); return; }
+      const t = { id: uid(), text, done:false };
+      state[day] = state[day] || []; state[day].push(t);
+      save();
+      $("#taskText").value = ""; renderDay(day);
+    }
+
+    /*** Theme ***/
+    function applyTheme(theme){
+      document.documentElement.setAttribute('data-theme', theme);
+      const toggle = $("#themeToggle");
+      if(toggle) toggle.checked = (theme === 'light');
+      try{ localStorage.setItem(THEME_KEY, theme); }catch{}
+    }
+
+    function initTheme(){
+      let theme = 'dark';
+      try{
+        theme = localStorage.getItem(THEME_KEY) || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      }catch{}
+      applyTheme(theme);
+      const toggle = $("#themeToggle");
+      toggle.addEventListener('change', () => applyTheme(toggle.checked ? 'light' : 'dark'));
+    }
+
+    /*** Init ***/
+    function init(){
+      renderHeader();
+      buildDayOptions();
+      buildColumns();
+      renderAll();
+      initTheme();
+
+      $("#addBtn").addEventListener("click", onAdd);
+      $("#taskText").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); onAdd(); }});
+    }
+
+    init();
+  })();
+  </script>
+</body>
+</html>
