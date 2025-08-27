@@ -8,46 +8,45 @@
     /* THEME TOKENS */
     :root{
       /* dark (blue/black) */
-      --bg: #0f172a;         /* slate-900 */
-      --panel: #111827;      /* gray-900 */
-      --card: #0b1220;       /* deep slate */
-      --text: #e5e7eb;       /* gray-200 */
-      --muted: #94a3b8;      /* slate-400 */
-      --accent: #4f46e5;     /* indigo-600 */
-      --accent-2: #22c55e;   /* green-500 */
-      --danger: #ef4444;     /* red-500 */
-      --ring: #7c3aed33;     /* violet ring (20%) */
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #0b1220;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #4f46e5;
+      --accent-2: #22c55e;
+      --danger: #ef4444;
+      --ring: #7c3aed33;
       --border: #ffffff1a;
       --task-bg: #0b1020;
       --link: #a5b4fc;
       --gradient-a: #1f2937;
       --gradient-b: #0b1020;
       --gradient-c: #05070c;
-      --button-grad-a: #6366f1; /* primary button */
+      --button-grad-a: #6366f1;
       --button-grad-b: #4f46e5;
       --input-bg: #0b1020;
       --input-border: #ffffff1f;
       --header-sep: #ffffff15;
     }
 
-    /* light (grey/white) overrides */
     [data-theme="light"]{
-      --bg: #f4f4f5;         /* zinc-100 */
-      --panel: #ffffff;      /* white */
-      --card: #fafafa;       /* near-white */
-      --text: #111827;       /* gray-900 */
-      --muted: #6b7280;      /* gray-500 */
-      --accent: #52525b;     /* zinc-600 */
-      --accent-2: #16a34a;   /* green-600 */
-      --danger: #dc2626;     /* red-600 */
-      --ring: #6b728033;     /* gray ring (20%) */
+      --bg: #f4f4f5;
+      --panel: #ffffff;
+      --card: #fafafa;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #52525b;
+      --accent-2: #16a34a;
+      --danger: #dc2626;
+      --ring: #6b728033;
       --border: #e5e7eb;
       --task-bg: #ffffff;
-      --link: #2563eb;       /* blue-600 */
+      --link: #2563eb;
       --gradient-a: #ffffff;
       --gradient-b: #ffffff;
       --gradient-c: #f4f4f5;
-      --button-grad-a: #9ca3af; /* neutral */
+      --button-grad-a: #9ca3af;
       --button-grad-b: #6b7280;
       --input-bg: #ffffff;
       --input-border: #e5e7eb;
@@ -62,12 +61,10 @@
       color:var(--text);
       display:flex; flex-direction:column;
     }
-    header{
-      position:sticky; top:0; z-index:5; backdrop-filter:saturate(140%) blur(6px);
+
+    header{ position:sticky; top:0; z-index:5; backdrop-filter:saturate(140%) blur(6px);
       background: linear-gradient(180deg, color-mix(in hsl, var(--bg), transparent 15%), color-mix(in hsl, var(--bg), transparent 45%), transparent);
-      border-bottom: 1px solid var(--header-sep);
-      text-align:center; padding:24px 16px 10px;
-    }
+      border-bottom: 1px solid var(--header-sep); text-align:center; padding:24px 16px 10px; }
     header h1{ margin:0; font-size: clamp(20px, 2.4vw, 28px); font-weight:700; letter-spacing:.3px }
     header .sub{ margin-top:6px; font-size:13px; color:var(--muted) }
 
@@ -82,65 +79,39 @@
 
     .shell{ width:min(1200px, 96%); margin:18px auto 28px; }
 
-    .composer{
-      display:flex; gap:12px; flex-wrap:wrap; align-items:center; background:linear-gradient(180deg, var(--panel), var(--card));
-      border:1px solid var(--border); border-radius:14px; padding:12px; box-shadow: 0 8px 30px #00000020;
-    }
-    .composer input[type="text"], .composer select{
-      flex:1 1 220px; padding:12px 14px; border-radius:10px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text);
-      outline:none; transition:border-color .15s, box-shadow .15s;
-    }
+    .composer{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; background:linear-gradient(180deg, var(--panel), var(--card));
+      border:1px solid var(--border); border-radius:14px; padding:12px; box-shadow: 0 8px 30px #00000020; }
+    .composer input[type="text"], .composer select{ flex:1 1 220px; padding:12px 14px; border-radius:10px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text);
+      outline:none; transition:border-color .15s, box-shadow .15s; }
     .composer input[type="text"]:focus, .composer select:focus{ border-color:var(--accent); box-shadow:0 0 0 4px var(--ring) }
-    .composer button{
-      padding:12px 16px; border-radius:12px; background:linear-gradient(180deg, var(--button-grad-a), var(--button-grad-b)); color:#fff; border:none; font-weight:700; cursor:pointer;
-      transition: transform .05s ease, filter .2s ease; white-space:nowrap;
-    }
+    .composer button{ padding:12px 16px; border-radius:12px; background:linear-gradient(180deg, var(--button-grad-a), var(--button-grad-b)); color:#fff; border:none; font-weight:700; cursor:pointer;
+      transition: transform .05s ease, filter .2s ease; white-space:nowrap; }
     .composer button:active{ transform: translateY(1px) }
-    .composer .pill{ font-size:12px; color:var(--muted) }
 
     .board{ margin-top:18px; }
-    .columns{
-      display:grid; gap:12px; align-items:start; justify-items:stretch;
-      grid-template-columns: repeat(4, minmax(220px, 1fr));
-    }
+    .columns{ display:grid; gap:12px; align-items:start; justify-items:stretch; grid-template-columns: repeat(4, minmax(220px, 1fr)); }
     @media (min-width:1100px){ .columns{ grid-template-columns: repeat(7, 1fr); } }
     @media (max-width:900px){ .columns{ grid-template-columns: repeat(2, minmax(220px, 1fr)); } }
     @media (max-width:620px){ .columns{ grid-template-columns: 1fr; } }
 
-    .column{
-      background:linear-gradient(180deg, var(--panel), var(--card)); padding:10px; border-radius:14px; border:1px solid var(--border);
-      min-height:220px; box-shadow: 0 8px 24px #00000025;
-    }
+    .column{ background:linear-gradient(180deg, var(--panel), var(--card)); padding:10px; border-radius:14px; border:1px solid var(--border);
+      min-height:220px; box-shadow: 0 8px 24px #00000025; }
     .col-head{ display:flex; justify-content:space-between; align-items:center; margin:4px 4px 8px; }
     .col-head h3{ margin:0; font-size:14px; letter-spacing:.6px; text-transform:uppercase; color:var(--muted) }
     .badge{ font-size:12px; color:var(--muted); background:color-mix(in hsl, var(--border), var(--panel) 30%); padding:4px 8px; border-radius:999px }
-    .today h3{ color: color-mix(in hsl, var(--accent), white 30%); }
 
-    .list{ list-style:none; margin:0; padding:6px; border:1px dashed var(--border); border-radius:12px; min-height:160px }
-    .list.drag-over{ border-color:var(--accent) }
+    .list{ list-style:none; margin:0; padding:6px; border:1px dashed var(--border); border-radius:12px; min-height:160px; transition: background .15s ease }
+    .list.drag-over{ background:color-mix(in hsl, var(--accent), transparent 85%) }
 
-    .task{
-      display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background:var(--task-bg); border:1px solid var(--border);
-      margin:8px 0; cursor:grab; user-select:none;
-    }
-    .task:active{ cursor:grabbing }
-    .task.done{ opacity:.65; text-decoration:line-through }
+    .task{ transition: transform .15s ease, box-shadow .15s ease; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background:var(--task-bg); border:1px solid var(--border); margin:8px 0; cursor:grab; user-select:none; }
+    .task.dragging{ opacity:0.6; transform:scale(1.05); box-shadow:0 8px 20px #00000055; }
 
-    .task .title{ flex:1; }
-    .task .controls{ display:flex; gap:6px }
-    .icon-btn{
-      border:none; background:color-mix(in hsl, var(--border), var(--panel) 30%); color:var(--text); border-radius:10px; padding:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
-    }
-    .icon-btn:hover{ filter:brightness(1.05) }
+    .icon-btn{ border:none; background:color-mix(in hsl, var(--border), var(--panel) 30%); color:var(--text); border-radius:10px; padding:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
     .icon-btn.danger{ background: color-mix(in hsl, var(--danger), white 85%) }
     .icon-btn.success{ background: color-mix(in hsl, var(--accent-2), white 80%) }
 
-    .small{ font-size:12px; color:var(--muted) }
     .hint{ margin:12px 2px 0; color:var(--muted); font-size:12px }
-
-    footer{ text-align:center; color:var(--muted); font-size:12px; padding:24px 0 40px }
     .future-row{ margin-top:12px; }
-    a.link{ color:var(--link); text-decoration:none }
   </style>
 </head>
 <body>
@@ -162,218 +133,92 @@
   <div class="shell">
     <section class="composer" aria-labelledby="addTaskLabel">
       <label id="addTaskLabel" class="pill" for="taskText">Add a task</label>
-      <input id="taskText" type="text" placeholder="New task... (e.g., Prep slides, Gym, Call Alex)" />
-      <select id="taskDay" aria-label="Choose a day">
-        <!-- options injected by JS -->
-      </select>
+      <input id="taskText" type="text" placeholder="New task..." />
+      <select id="taskDay"></select>
       <button id="addBtn" type="button">Add</button>
-      <span class="pill">Tasks are saved to this browser automatically</span>
     </section>
 
-    <section class="board" aria-label="Weekly board">
-      <div id="columns" class="columns"><!-- 7 day columns injected --></div>
-      <!-- Future Tasks sits under week display -->
+    <section class="board">
+      <div id="columns" class="columns"></div>
       <div id="futureRow" class="future-row"></div>
-      <p class="hint">Tip: drag tasks between days (or into <strong>Future Tasks</strong>). Click ✓ to toggle done, and 🗑 to delete.</p>
+      <p class="hint">Tip: drag tasks between days (or into <strong>Future Tasks</strong>).</p>
     </section>
   </div>
 
-  <footer>
-    <span class="small">Weekly Planner • Single-file HTML • No frameworks</span>
-  </footer>
-
   <script>
   (function(){
-    const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    const FUTURE = "Future Tasks";
-    const STORAGE_KEY = "weekly_planner_v1";
-    const THEME_KEY = "planner_theme"; // 'dark' | 'light'
+    const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const FUTURE="Future Tasks";
+    const STORAGE_KEY="weekly_planner_v1"; // tasks + week key
+    const THEME_KEY="planner_theme";       // theme only
 
-    /*** Utilities ***/
-    const $ = (sel, root=document) => root.querySelector(sel);
-    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-    const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const $=(s,r=document)=>r.querySelector(s);
+    const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 
-    /*** Date header ***/
+    /** Date header **/
     function renderHeader(){
-      const now = new Date();
-      const heading = now.toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-      $("#today").textContent = heading;
-
-      // Compute week range (Sun - Sat) for the current date
-      const start = new Date(now); start.setDate(now.getDate() - now.getDay());
-      const end = new Date(start); end.setDate(start.getDate() + 6);
-      const fmt = (d) => d.toLocaleDateString(undefined, { month:'short', day:'numeric' });
-      $("#weekRange").textContent = `${fmt(start)} – ${fmt(end)}`;
+      const now=new Date();
+      const start=weekStart(now); const end=new Date(start); end.setDate(start.getDate()+6);
+      const heading=now.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      const fmt=(d)=>d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+      const range=`${fmt(start)} – ${fmt(end)}`;
+      const todayEl=$('#today'); if(todayEl) todayEl.textContent=heading;
+      const rangeEl=$('#weekRange'); if(rangeEl) rangeEl.textContent=range;
     }
 
-    /*** State ***/
-    function blankState(){
-      const obj = {};
-      for(const d of DAYS) obj[d] = [];
-      obj[FUTURE] = [];
-      return obj;
-    }
+    /** Week helpers **/
+    function weekStart(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x; } // Sunday start
+    function weekKeyFor(d){ const s=weekStart(d); return `${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`; }
 
-    function load(){
-      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || blankState(); }
-      catch(e){ return blankState(); }
-    }
-    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    /** State **/
+    function blankState(){ const o={ __weekKey: weekKeyFor(new Date()) }; for(const day of DAYS) o[day]=[]; o[FUTURE]=[]; return o; }
+    function load(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||blankState(); }catch{return blankState();} }
+    function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch{} }
 
-    let state = load();
+    let state=load();
 
-    /*** DOM builders ***/
-    function buildDayOptions(){
-      const sel = $("#taskDay");
-      sel.innerHTML = "";
-      for(const d of DAYS) sel.append(new Option(d, d));
-      sel.append(new Option(FUTURE, FUTURE));
-      sel.value = DAYS[new Date().getDay()];
-    }
-
-    function buildColumns(){
-      const wrap = document.getElementById("columns");
-      wrap.innerHTML = "";
-      const todayIdx = new Date().getDay();
-      for(const [i, day] of DAYS.entries()){
-        wrap.append(column(day, i===todayIdx));
+    // Ensure we reset week boards when a new week begins, but keep Future Tasks intact
+    (function enforceWeek(){
+      const currentKey=weekKeyFor(new Date());
+      const storedKey=state.__weekKey;
+      if(storedKey!==currentKey){
+        const future=(state && Array.isArray(state[FUTURE]))? state[FUTURE] : [];
+        state=blankState();
+        state.__weekKey=currentKey;
+        state[FUTURE]=future; // preserve
+        save();
       }
-      const futureWrap = document.getElementById("futureRow");
-      if(futureWrap){
-        futureWrap.innerHTML = "";
-        futureWrap.append(column(FUTURE, false));
-      }
-    }
+    })();
 
-    function column(day, isToday){
-      const col = document.createElement("div");
-      col.className = "column" + (isToday ? " today" : "");
-      col.dataset.day = day;
+    /** DOM builders **/
+    function buildDayOptions(){ const sel=$('#taskDay'); sel.innerHTML=""; for(const d of DAYS) sel.append(new Option(d,d)); sel.append(new Option(FUTURE,FUTURE)); sel.value=DAYS[new Date().getDay()]; }
+    function buildColumns(){ const wrap=$('#columns'); wrap.innerHTML=""; const today=new Date().getDay(); for(const [i,d] of DAYS.entries()) wrap.append(column(d,i===today)); const fwrap=$('#futureRow'); fwrap.innerHTML=""; fwrap.append(column(FUTURE,false)); }
+    function column(day,isToday){ const c=document.createElement('div'); c.className='column'+(isToday?' today':''); c.dataset.day=day; const h=document.createElement('div'); h.className='col-head'; const h3=document.createElement('h3'); h3.textContent=day; h.append(h3); const b=document.createElement('span'); b.className='badge'; b.dataset.badgeFor=day; b.textContent='0'; h.append(b); const l=document.createElement('ul'); l.className='list'; l.dataset.day=day; enableDrops(l); c.append(h,l); return c; }
 
-      const head = document.createElement("div"); head.className = "col-head";
-      const h3 = document.createElement("h3"); h3.textContent = day; head.append(h3);
-      const badge = document.createElement("span"); badge.className = "badge"; badge.dataset.badgeFor = day; badge.textContent = "0"; head.append(badge);
+    /** Rendering **/
+    function renderDay(day){ const l=document.querySelector(`.list[data-day="${CSS.escape(day)}"]`); if(!l) return; l.innerHTML=''; const tasks=state[day]||[]; for(const t of tasks) l.append(taskItem(t,day)); const b=document.querySelector(`.badge[data-badge-for="${CSS.escape(day)}"]`); if(b) b.textContent=tasks.length; }
+    function renderAll(){ for(const d of [...DAYS,FUTURE]) renderDay(d); }
 
-      const list = document.createElement("ul"); list.className = "list"; list.dataset.day = day; list.setAttribute("aria-label", day + " tasks");
-      enableDrops(list);
+    function taskItem(task,day){ const li=document.createElement('li'); li.className='task'+(task.done?' done':''); li.draggable=true; li.dataset.id=task.id; li.dataset.day=day;
+      li.addEventListener('dragstart',ev=>{ li.classList.add('dragging'); try{ev.dataTransfer.effectAllowed='move';}catch{} ev.dataTransfer.setData('text/plain', JSON.stringify({from:day,id:task.id})); });
+      li.addEventListener('dragend',()=> li.classList.remove('dragging'));
+      const chk=document.createElement('button'); chk.className='icon-btn success'; chk.textContent='✓'; chk.title='Toggle done'; chk.addEventListener('click',()=>{ task.done=!task.done; save(); renderDay(day); });
+      const txt=document.createElement('div'); txt.className='title'; txt.textContent=task.text; txt.title=task.text;
+      const del=document.createElement('button'); del.className='icon-btn danger'; del.textContent='🗑'; del.title='Delete task'; del.addEventListener('click',()=>{ state[day]=state[day].filter(t=>t.id!==task.id); save(); renderDay(day); });
+      li.append(chk,txt,del); return li; }
 
-      col.append(head, list);
-      return col;
-    }
+    /** DnD **/
+    function enableDrops(l){ l.addEventListener('dragover',ev=>{ ev.preventDefault(); l.classList.add('drag-over'); }); l.addEventListener('dragleave',()=> l.classList.remove('drag-over')); l.addEventListener('drop',ev=>{ ev.preventDefault(); l.classList.remove('drag-over'); try{ const p=JSON.parse(ev.dataTransfer.getData('text/plain')); moveTask(p.from,l.dataset.day,p.id); }catch{} }); }
+    function moveTask(from,to,id){ if(!state[from]) return; const i=state[from].findIndex(t=>t.id===id); if(i===-1) return; const [task]=state[from].splice(i,1); state[to].push(task); save(); renderDay(from); renderDay(to); }
 
-    /*** Rendering ***/
-    function renderAll(){
-      for(const day of [...DAYS, FUTURE]) renderDay(day);
-    }
+    /** Add task **/
+    function onAdd(){ const text=$('#taskText').value.trim(); const day=$('#taskDay').value; if(!text) return; const t={id:uid(), text, done:false}; state[day].push(t); save(); $('#taskText').value=''; renderDay(day); }
 
-    function renderDay(day){
-      const list = document.querySelector(`.list[data-day="${CSS.escape(day)}"]`);
-      if(!list) return;
-      list.innerHTML = "";
-      const tasks = state[day] || [];
-      for(const t of tasks){ list.append(taskItem(t, day)); }
-      const badge = document.querySelector(`.badge[data-badge-for="${CSS.escape(day)}"]`);
-      if(badge) badge.textContent = tasks.length;
-    }
+    /** Theme **/
+    function applyTheme(theme){ document.documentElement.setAttribute('data-theme',theme); const t=$('#themeToggle'); if(t) t.checked=(theme==='light'); try{ localStorage.setItem(THEME_KEY, theme);}catch{} }
+    function initTheme(){ let theme='dark'; try{ theme=localStorage.getItem(THEME_KEY)||'dark'; }catch{} applyTheme(theme); const t=$('#themeToggle'); t.addEventListener('change',()=> applyTheme(t.checked?'light':'dark')); }
 
-    function taskItem(task, day){
-      const li = document.createElement("li");
-      li.className = "task" + (task.done ? " done" : "");
-      li.draggable = true;
-      li.dataset.id = task.id; li.dataset.day = day;
-
-      li.addEventListener("dragstart", ev => {
-        li.classList.add("dragging");
-        ev.dataTransfer.setData("text/plain", JSON.stringify({ from: day, id: task.id }));
-      });
-      li.addEventListener("dragend", () => li.classList.remove("dragging"));
-
-      const chk = document.createElement("button");
-      chk.className = "icon-btn success"; chk.title = task.done ? "Mark as not done" : "Mark as done";
-      chk.textContent = "✓";
-      chk.addEventListener("click", () => { task.done = !task.done; save(); renderDay(day); });
-
-      const txt = document.createElement("div"); txt.className = "title"; txt.textContent = task.text;
-      txt.title = task.text;
-
-      const del = document.createElement("button"); del.className = "icon-btn danger"; del.title = "Delete task"; del.textContent = "🗑";
-      del.addEventListener("click", () => { removeTask(day, task.id); });
-
-      const ctr = document.createElement("div"); ctr.className = "controls"; ctr.append(chk, del);
-      li.append(chk, txt, ctr);
-      return li;
-    }
-
-    function removeTask(day, id){
-      state[day] = (state[day] || []).filter(t => t.id !== id);
-      save(); renderDay(day);
-    }
-
-    /*** DnD ***/
-    function enableDrops(listEl){
-      listEl.addEventListener("dragover", (ev) => { ev.preventDefault(); listEl.classList.add("drag-over"); });
-      listEl.addEventListener("dragleave", () => listEl.classList.remove("drag-over"));
-      listEl.addEventListener("drop", (ev) => {
-        ev.preventDefault(); listEl.classList.remove("drag-over");
-        try{
-          const payload = JSON.parse(ev.dataTransfer.getData("text/plain"));
-          moveTask(payload.from, listEl.dataset.day, payload.id);
-        }catch{ /* ignore */ }
-      });
-    }
-
-    function moveTask(fromDay, toDay, id){
-      if(!state[fromDay]) return;
-      const idx = state[fromDay].findIndex(t => t.id === id);
-      if(idx === -1) return;
-      const [task] = state[fromDay].splice(idx, 1);
-      state[toDay] = state[toDay] || [];
-      state[toDay].push(task); // append to end
-      save(); renderDay(fromDay); renderDay(toDay);
-    }
-
-    /*** Add task ***/
-    function onAdd(){
-      const text = $("#taskText").value.trim();
-      const day = $("#taskDay").value;
-      if(!text) { $("#taskText").focus(); return; }
-      const t = { id: uid(), text, done:false };
-      state[day] = state[day] || []; state[day].push(t);
-      save();
-      $("#taskText").value = ""; renderDay(day);
-    }
-
-    /*** Theme ***/
-    function applyTheme(theme){
-      document.documentElement.setAttribute('data-theme', theme);
-      const toggle = $("#themeToggle");
-      if(toggle) toggle.checked = (theme === 'light');
-      try{ localStorage.setItem(THEME_KEY, theme); }catch{}
-    }
-
-    function initTheme(){
-      let theme = 'dark';
-      try{
-        theme = localStorage.getItem(THEME_KEY) || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-      }catch{}
-      applyTheme(theme);
-      const toggle = $("#themeToggle");
-      toggle.addEventListener('change', () => applyTheme(toggle.checked ? 'light' : 'dark'));
-    }
-
-    /*** Init ***/
-    function init(){
-      renderHeader();
-      buildDayOptions();
-      buildColumns();
-      renderAll();
-      initTheme();
-
-      $("#addBtn").addEventListener("click", onAdd);
-      $("#taskText").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); onAdd(); }});
-    }
-
+    function init(){ renderHeader(); buildDayOptions(); buildColumns(); renderAll(); initTheme(); $('#addBtn').addEventListener('click', onAdd); $('#taskText').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); onAdd(); } }); }
     init();
   })();
   </script>
