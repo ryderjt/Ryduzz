@@ -1,8 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<link rel="icon" href="favicon.ico" type="image/x-icon">
-
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <meta name="theme-color" content="#0b0b0f">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -297,7 +296,7 @@
             </p>
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px">
               <a class="btn" href="mailto:ryduzz69@gmail.com">Email Me</a>
-              <a class="btn" href="https://discord.gg/SrZ2Um6KbA" title="Replace # with your Discord invite link">Discord Server</a>
+              <a class="btn" href="https://discord.gg/SrZ2Um6KbA">Discord Server</a>
             </div>
           </div>
         </div>
@@ -371,9 +370,10 @@
       iframe.allow = 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
       iframe.allowFullscreen = true;
       iframe.loading = 'lazy';
-      iframe.src = `https://www.youtube.com/embed/${id}`;
+      iframe.src = `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1`;
       target.appendChild(iframe);
     }
+
 
     function render(){
       const len = videos.length;
