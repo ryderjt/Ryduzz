@@ -1,226 +1,415 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!doctype html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Weekly Planner</title>
-  <style>
-    /* THEME TOKENS */
-    :root{
-      /* dark (blue/black) */
-      --bg: #0f172a;
-      --panel: #111827;
-      --card: #0b1220;
-      --text: #e5e7eb;
-      --muted: #94a3b8;
-      --accent: #4f46e5;
-      --accent-2: #22c55e;
-      --danger: #ef4444;
-      --ring: #7c3aed33;
-      --border: #ffffff1a;
-      --task-bg: #0b1020;
-      --link: #a5b4fc;
-      --gradient-a: #1f2937;
-      --gradient-b: #0b1020;
-      --gradient-c: #05070c;
-      --button-grad-a: #6366f1;
-      --button-grad-b: #4f46e5;
-      --input-bg: #0b1020;
-      --input-border: #ffffff1f;
-      --header-sep: #ffffff15;
-    }
+  <title>Ryduzz — Editor & CapCut Affiliate Creator</title>
+  <meta name="description" content="Ryduzz — Professional video editor (AE, PR, DaVinci, CapCut). 100M+ views. Shorts & long-form. Hire me." />
 
-    [data-theme="light"]{
-      --bg: #f4f4f5;
-      --panel: #ffffff;
-      --card: #fafafa;
-      --text: #111827;
-      --muted: #6b7280;
-      --accent: #52525b;
-      --accent-2: #16a34a;
-      --danger: #dc2626;
-      --ring: #6b728033;
-      --border: #e5e7eb;
-      --task-bg: #ffffff;
-      --link: #2563eb;
-      --gradient-a: #ffffff;
-      --gradient-b: #ffffff;
-      --gradient-c: #f4f4f5;
-      --button-grad-a: #9ca3af;
-      --button-grad-b: #6b7280;
-      --input-bg: #ffffff;
-      --input-border: #e5e7eb;
-      --header-sep: #e5e7eb;
+  <style>
+    :root{
+      --bg:#0b0b0f;
+      --card:#111118;
+      --card-2:#0f0f15;
+      --text:#e9e9ef;
+      --muted:#a6a6b2;
+      --line:#262635;
+      --accent-1:#8a2be2;
+      --accent-2:#4cc9f0;
+      --accent-3:#22d3ee;
+      --radius:14px;
+      --maxw:1100px;
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+      --ease: cubic-bezier(.22,.61,.36,1);
     }
 
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-      background: radial-gradient(1200px 800px at 50% -20%, var(--gradient-a), var(--gradient-b) 65%, var(--gradient-c) 100%), var(--bg);
-      color:var(--text);
-      display:flex; flex-direction:column;
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Georgia","Garamond","Times New Roman",serif}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;height:auto;display:block}
+    .container{width:min(100%, var(--maxw));margin-inline:auto;padding:0 20px}
+
+    /* Soft animated background */
+    .bg-orb{
+      position:fixed; inset:auto auto 10% -10%;
+      width:60vmax; height:60vmax; z-index:-1;
+      filter: blur(80px) saturate(120%); opacity:.25;
+      background:
+        radial-gradient(40% 40% at 30% 30%, var(--accent-1), transparent 70%),
+        radial-gradient(45% 45% at 70% 60%, var(--accent-2), transparent 60%),
+        radial-gradient(35% 35% at 60% 20%, var(--accent-3), transparent 65%);
+      animation: float 18s var(--ease) infinite alternate;
     }
+    @keyframes float { 0%{transform:translate(0,0) rotate(0)} 100%{transform:translate(4%,-3%) rotate(12deg)} }
 
-    header{ position:sticky; top:0; z-index:5; backdrop-filter:saturate(140%) blur(6px);
-      background: linear-gradient(180deg, color-mix(in hsl, var(--bg), transparent 15%), color-mix(in hsl, var(--bg), transparent 45%), transparent);
-      border-bottom: 1px solid var(--header-sep); text-align:center; padding:24px 16px 10px; }
-    header h1{ margin:0; font-size: clamp(20px, 2.4vw, 28px); font-weight:700; letter-spacing:.3px }
-    header .sub{ margin-top:6px; font-size:13px; color:var(--muted) }
+    header{position:sticky; top:0; z-index:50; backdrop-filter: blur(8px);
+      background:linear-gradient(to bottom, rgba(11,11,15,.8), rgba(11,11,15,.4));
+      border-bottom:1px solid var(--line);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0;}
+    .brand{font-weight:700; letter-spacing:.5px; font-size:20px; line-height:1;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .nav a{font-size:14px; color:var(--muted); padding:8px 10px; border-radius:10px}
+    .nav a:hover{color:var(--text); background:rgba(255,255,255,.04)}
 
-    .topbar{ display:flex; justify-content:center; gap:16px; align-items:center; margin-top:10px; }
-    .theme-toggle{ display:inline-flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); }
-    .switch{ position:relative; width:48px; height:26px; }
-    .switch input{ opacity:0; width:0; height:0 }
-    .slider{ position:absolute; inset:0; border-radius:999px; background:var(--border); transition:background .2s }
-    .slider::before{ content:""; position:absolute; height:20px; width:20px; left:3px; top:3px; border-radius:50%; background:var(--panel); border:1px solid var(--border); transition: transform .2s }
-    .switch input:checked + .slider{ background: color-mix(in hsl, var(--accent), white 60%) }
-    .switch input:checked + .slider::before{ transform: translateX(22px) }
+    .hero{padding:72px 0 36px}
+    .title{font-size:clamp(36px,6vw,64px); line-height:1.05; margin:0 0 12px; letter-spacing:.4px}
+    .subtitle{color:var(--muted); font-size:clamp(16px,2.4vw,20px); margin:0 0 28px}
+    .badge{display:inline-flex; align-items:center; gap:10px; font-size:14px; padding:10px 14px; border-radius:999px;
+      border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.08)); box-shadow:var(--shadow)}
+    .cta-row{display:flex; flex-wrap:wrap; gap:12px; margin:24px 0 32px}
+    .btn{display:inline-flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; font-weight:600;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.1));
+      transition: transform .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);}
+    .btn:hover{transform:translateY(-1px); border-color:#34344a; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12))}
+    .btn.primary{background:linear-gradient(90deg, rgba(138,43,226,.18), rgba(76,201,240,.18)); border-color:#3a3a55}
 
-    .shell{ width:min(1200px, 96%); margin:18px auto 28px; }
+    .socials{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px}
+    .chip{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; font-size:14px; color:var(--muted);
+      border:1px solid var(--line); background:rgba(255,255,255,.03)}
+    .chip:hover{color:var(--text); background:rgba(255,255,255,.06)}
 
-    .composer{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; background:linear-gradient(180deg, var(--panel), var(--card));
-      border:1px solid var(--border); border-radius:14px; padding:12px; box-shadow: 0 8px 30px #00000020; }
-    .composer input[type="text"], .composer select{ flex:1 1 220px; padding:12px 14px; border-radius:10px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text);
-      outline:none; transition:border-color .15s, box-shadow .15s; }
-    .composer input[type="text"]:focus, .composer select:focus{ border-color:var(--accent); box-shadow:0 0 0 4px var(--ring) }
-    .composer button{ padding:12px 16px; border-radius:12px; background:linear-gradient(180deg, var(--button-grad-a), var(--button-grad-b)); color:#fff; border:none; font-weight:700; cursor:pointer;
-      transition: transform .05s ease, filter .2s ease; white-space:nowrap; }
-    .composer button:active{ transform: translateY(1px) }
+    section{padding:56px 0; border-top:1px solid var(--line)}
+    h2{font-size:clamp(24px,3.6vw,32px); margin:0 0 18px}
+    p{color:#d7d7df; font-size:18px; line-height:1.6}
 
-    .board{ margin-top:18px; }
-    .columns{ display:grid; gap:12px; align-items:start; justify-items:stretch; grid-template-columns: repeat(4, minmax(220px, 1fr)); }
-    @media (min-width:1100px){ .columns{ grid-template-columns: repeat(7, 1fr); } }
-    @media (max-width:900px){ .columns{ grid-template-columns: repeat(2, minmax(220px, 1fr)); } }
-    @media (max-width:620px){ .columns{ grid-template-columns: 1fr; } }
+    /* Grid + card */
+    .grid{display:grid; gap:18px; grid-template-columns: repeat(12, 1fr)}
+    .card{background:linear-gradient(180deg, var(--card), var(--card-2)); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow)}
+    .span-4{grid-column:span 4} .span-6{grid-column:span 6} .span-8{grid-column:span 8} .span-12{grid-column:1/-1}
+    @media (max-width:960px){ .span-4,.span-6,.span-8{grid-column:1/-1} }
 
-    .column{ background:linear-gradient(180deg, var(--panel), var(--card)); padding:10px; border-radius:14px; border:1px solid var(--border);
-      min-height:220px; box-shadow: 0 8px 24px #00000025; }
-    .col-head{ display:flex; justify-content:space-between; align-items:center; margin:4px 4px 8px; }
-    .col-head h3{ margin:0; font-size:14px; letter-spacing:.6px; text-transform:uppercase; color:var(--muted) }
-    .badge{ font-size:12px; color:var(--muted); background:color-mix(in hsl, var(--border), var(--panel) 30%); padding:4px 8px; border-radius:999px }
+    .list{margin:0; padding-left:18px} .list li{margin:8px 0; color:#dcdce4}
 
-    .list{ list-style:none; margin:0; padding:6px; border:1px dashed var(--border); border-radius:12px; min-height:160px; transition: background .15s ease }
-    .list.drag-over{ background:color-mix(in hsl, var(--accent), transparent 85%) }
+    /* Embeds */
+    .embed{position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line); aspect-ratio:16/9; background:#0c0c13}
+    .embed iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
 
-    .task{ transition: transform .15s ease, box-shadow .15s ease; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background:var(--task-bg); border:1px solid var(--border); margin:8px 0; cursor:grab; user-select:none; }
-    .task.dragging{ opacity:0.6; transform:scale(1.05); box-shadow:0 8px 20px #00000055; }
+    /* Carousel (center card with blurred side cards behind) */
+    .carousel{position:relative}
+    .stage{position:relative; aspect-ratio:16/9; margin-bottom:10px}
+    .card-vid{
+      position:absolute; top:0; bottom:0; border-radius:14px; overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow);
+      background:#0c0c13;
+      transition: transform .5s var(--ease), filter .5s var(--ease), opacity .5s var(--ease), z-index .5s var(--ease);
+    }
+    .card-vid iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
 
-    .icon-btn{ border:none; background:color-mix(in hsl, var(--border), var(--panel) 30%); color:var(--text); border-radius:10px; padding:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
-    .icon-btn.danger{ background: color-mix(in hsl, var(--danger), white 85%) }
-    .icon-btn.success{ background: color-mix(in hsl, var(--accent-2), white 80%) }
+    .center{left:50%; transform:translateX(-50%) scale(1); width:60%; z-index:3}
+    .side{top:3%; width:32%; filter: blur(1.1px) grayscale(8%) opacity(.9); z-index:2; transform: scale(.93)}
+    .left{left:2%}
+    .right{right:2%}
 
-    .hint{ margin:12px 2px 0; color:var(--muted); font-size:12px }
-    .future-row{ margin-top:12px; }
+    .car-arrow{
+      position:absolute; top:50%; transform:translateY(-50%);
+      background:rgba(255,255,255,.08); border:1px solid var(--line);
+      color:var(--text); padding:10px 12px; border-radius:12px; cursor:pointer; backdrop-filter: blur(5px); z-index:5;
+    }
+    .car-arrow:hover{background:rgba(255,255,255,.12)}
+    .car-prev{left:12px} .car-next{right:12px}
+
+    .textlink{display:inline-block; color:var(--muted); text-decoration:underline; text-underline-offset:3px}
+    .textlink:hover{color:var(--text)}
+
+    /* Reveal on scroll */
+    .reveal{opacity:0; transform: translateY(14px); transition: all .7s var(--ease)}
+    .reveal.in{opacity:1; transform:none}
+
+    footer{padding:36px 0 64px; color:var(--muted); text-align:center}
   </style>
 </head>
 <body>
+  <div class="bg-orb" aria-hidden="true"></div>
+
   <header>
-    <h1 id="today"></h1>
-    <div class="sub" id="weekRange"></div>
-    <div class="topbar">
-      <div class="theme-toggle">
-        <span>Dark</span>
-        <label class="switch" aria-label="Toggle light theme">
-          <input id="themeToggle" type="checkbox" />
-          <span class="slider"></span>
-        </label>
-        <span>Light</span>
-      </div>
+    <div class="container nav">
+      <div class="brand" aria-label="Site brand">RYDUZZ</div>
+      <nav aria-label="Primary">
+        <a href="#about">About</a>
+        <a href="#work">Work</a>
+        <a href="#services">Services</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#contact">Contact</a>
+      </nav>
     </div>
   </header>
 
-  <div class="shell">
-    <section class="composer" aria-labelledby="addTaskLabel">
-      <label id="addTaskLabel" class="pill" for="taskText">Add a task</label>
-      <input id="taskText" type="text" placeholder="New task..." />
-      <select id="taskDay"></select>
-      <button id="addBtn" type="button">Add</button>
+  <main>
+    <!-- HERO -->
+    <section class="hero container">
+      <span class="badge reveal" aria-label="Stats">100M+ views • 5+ years editing • AE · PR · DaVinci · CapCut</span>
+      <h1 class="title reveal" style="margin-top:14px">Editor for Shorts & Long-Form Content</h1>
+      <p class="subtitle reveal">I’m <strong>Ryduzz</strong> — a CapCut Affiliate Creator and video editor crafting high-impact edits, clean motion graphics, and cinematic looks that help creators and brands stand out.</p>
+
+      <div class="cta-row reveal">
+        <a class="btn primary" href="#work" id="view-portfolio-btn">View Portfolio</a>
+        <a class="btn" href="https://www.youtube.com/@ryduzzz" target="_blank" rel="noopener" title="Past work on YouTube">Past Work</a>
+        <a class="btn" href="#contact">Hire Me</a>
+      </div>
+
+      <!-- Socials -->
+      <div class="socials reveal" aria-label="Social links">
+        <a class="chip" href="https://www.tiktok.com/@ryduzzz" target="_blank" rel="noopener" aria-label="TikTok">TikTok</a>
+        <a class="chip" href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
+        <a class="chip" href="https://www.capcut.com/user-info?lang=en" target="_blank" rel="noopener" aria-label="CapCut">CapCut</a>
+        <a class="chip" href="#" target="_blank" rel="noopener" aria-label="Discord Server">Discord Server</a>
+        <a class="chip" href="https://www.youtube.com/@ryduzzz" target="_blank" rel="noopener" aria-label="YouTube">YouTube</a>
+      </div>
     </section>
 
-    <section class="board">
-      <div id="columns" class="columns"></div>
-      <div id="futureRow" class="future-row"></div>
-      <p class="hint">Tip: drag tasks between days (or into <strong>Future Tasks</strong>).</p>
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="container grid">
+        <div class="card span-8 reveal">
+          <h2>About Me</h2>
+          <p>
+            Hi, I’m <strong>Ryduzz</strong>. I edit videos with a focus on story, rhythm, and clarity —
+            blending <em>After Effects</em>, <em>Premiere Pro</em>, <em>DaVinci Resolve</em>, and <em>CapCut</em> to deliver
+            polished work fast. I’ve generated over <strong>100 million views</strong> across edits and templates,
+            and I love turning rough footage into scroll-stopping content for Shorts, Reels, and YouTube.
+          </p>
+          <p>
+            I’m open for freelance work with creators, streamers, and brands. If you’ve got a vision, I’ll help shape it into a clean, compelling edit — from pacing and transitions to motion graphics and color.
+          </p>
+        </div>
+
+        <div class="card span-4 reveal" aria-label="Quick facts">
+          <h2 style="margin-bottom:10px">Quick Facts</h2>
+          <ul class="list">
+            <li>5+ years editing experience</li>
+            <li>CapCut Affiliate Creator</li>
+            <li>100M+ views across edits/templates</li>
+            <li>Fast, reliable turnaround</li>
+            <li>Clear communication & revisions</li>
+          </ul>
+        </div>
+      </div>
     </section>
-  </div>
+
+    <!-- WORK (CAROUSEL) -->
+    <section id="work">
+      <div class="container">
+        <h2 class="reveal">Past Work</h2>
+
+        <div class="card reveal carousel" aria-label="Past Work Carousel">
+          <div class="stage" id="stage">
+            <div class="card-vid center" id="vid-center" aria-label="Current video"></div>
+            <div class="card-vid side left" id="vid-left" aria-label="Previous video (click to open)"></div>
+            <div class="card-vid side right" id="vid-right" aria-label="Next video (click to open)"></div>
+            <button class="car-arrow car-prev" id="car-prev" aria-label="Previous video">‹</button>
+            <button class="car-arrow car-next" id="car-next" aria-label="Next video">›</button>
+          </div>
+        </div>
+
+        <!-- Text link under carousel -->
+        <div class="reveal" style="text-align:center; margin-top:6px">
+          <a class="textlink" href="https://drive.google.com/drive/folders/1yhpCQUQz16OSSIvKOt3jNoGMWS0DmQCS?usp=drive_link" target="_blank" rel="noopener">Full Portfolio</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES / RATES -->
+    <section id="services">
+      <div class="container">
+        <h2 class="reveal">Services & Rates</h2>
+
+        <div class="grid">
+          <div class="card span-6 reveal">
+            <h3 style="margin-top:0">What I Offer</h3>
+            <ul class="list">
+              <li>Short-form (YouTube Shorts, TikTok, Reels)</li>
+              <li>Long-form (gameplay, commentary, vlogs, education)</li>
+              <li>Motion graphics, transitions, pacing, sound design</li>
+              <li>Color grading and cinematic looks</li>
+              <li>Captions (auto or stylized), thumbnails on request</li>
+            </ul>
+          </div>
+
+          <div class="card span-6 reveal">
+            <h3 style="margin-top:0">Rates</h3>
+            <ul class="list">
+              <li><strong>Short-form (≤ 60s):</strong> from $10 USD</li>
+              <li><strong>Long-form:</strong> $10 USD per edited minute (e.g., 5 min = $50)</li>
+              <li><em>Pricing scales with complexity and turnaround.</em></li>
+              <li>Bundle plans available for consistent weekly content.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section id="reviews">
+      <div class="container">
+        <h2 class="reveal">Reviews</h2>
+        <div class="grid">
+          <div class="card span-4 reveal">
+            <div style="color:#ffd166;letter-spacing:2px;margin-bottom:6px">★★★★★</div>
+            <p>Fast, communicative, and nailed the style on the first pass. Will book again.</p>
+            <p style="color:var(--muted)">— Client Name</p>
+          </div>
+          <div class="card span-4 reveal">
+            <div style="color:#ffd166;letter-spacing:2px;margin-bottom:6px">★★★★★</div>
+            <p>Great pacing and clean motion graphics. Turned a rough cut into a tight story.</p>
+            <p style="color:var(--muted)">— Client Name</p>
+          </div>
+          <div class="card span-4 reveal">
+            <div style="color:#ffd166;letter-spacing:2px;margin-bottom:6px">★★★★★</div>
+            <p>Delivered on time, took feedback well, and the final looked cinematic.</p>
+            <p style="color:var(--muted)">— Client Name</p>
+          </div>
+        </div>
+        <p class="reveal" style="margin-top:16px;color:var(--muted)">Want to leave a review? Contact me for a form or drop feedback in my Discord.</p>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="container">
+        <h2 class="reveal">Work With Me</h2>
+        <div class="grid">
+          <div class="card span-8 reveal">
+            <h3 style="margin-top:0">What I Need From You</h3>
+            <ul class="list">
+              <li>A reference video (style you’re going for)</li>
+              <li>Timestamps or key moments from your footage</li>
+              <li>Your availability and timezone</li>
+              <li>Your deadline and how many videos you need</li>
+              <li>Any specific requests (text, pacing, effects, music, etc.)</li>
+            </ul>
+            <p style="color:var(--muted);margin-top:10px">Please be respectful — I may not always reply instantly, but I’ll get back to you as soon as I can.</p>
+          </div>
+
+          <div class="card span-4 reveal" aria-label="Contact methods">
+            <h3 style="margin-top:0">Contact</h3>
+            <p class="inline-copy" style="margin:0 0 10px">
+              <span id="email-text">ryduzz69@gmail.com</span>
+              <button class="copy-btn" data-copy="#email-text">Copy</button>
+            </p>
+            <p class="inline-copy" style="margin:0 0 10px">
+              <span id="discord-text">Discord: ryduzzz</span>
+              <button class="copy-btn" data-copy="#discord-text">Copy</button>
+            </p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px">
+              <a class="btn" href="mailto:ryduzz69@gmail.com">Email Me</a>
+              <a class="btn" href="#" title="Replace # with your Discord invite link">Discord Server</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="year"></span> Ryduzz • Editor & CapCut Affiliate Creator
+  </footer>
 
   <script>
-  (function(){
-    const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    const FUTURE="Future Tasks";
-    const STORAGE_KEY="weekly_planner_v1"; // tasks + week key
-    const THEME_KEY="planner_theme";       // theme only
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-    const $=(s,r=document)=>r.querySelector(s);
-    const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+    // Reveal on scroll
+    const els = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      })
+    },{threshold:.18});
+    els.forEach(el=>io.observe(el));
 
-    /** Date header **/
-    function renderHeader(){
-      const now=new Date();
-      const start=weekStart(now); const end=new Date(start); end.setDate(start.getDate()+6);
-      const heading=now.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-      const fmt=(d)=>d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
-      const range=`${fmt(start)} – ${fmt(end)}`;
-      const todayEl=$('#today'); if(todayEl) todayEl.textContent=heading;
-      const rangeEl=$('#weekRange'); if(rangeEl) rangeEl.textContent=range;
+    // Copy to clipboard
+    document.querySelectorAll('.copy-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const sel = btn.getAttribute('data-copy');
+        const el = document.querySelector(sel);
+        if(!el) return;
+        const text = el.textContent.replace(/^.*?:\s*/,'');
+        navigator.clipboard.writeText(text).then(()=>{
+          const prev = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(()=>btn.textContent = prev, 1200);
+        });
+      });
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        const id = a.getAttribute('href');
+        if(id.length > 1){
+          e.preventDefault();
+          document.querySelector(id)?.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      });
+    });
+
+    // ------------------ Carousel Logic ------------------
+    // Your two YouTube Shorts (first is default):
+    const videos = [
+      'PnoWs7L8dDY',   // first (default)
+      'BL-ngsWZAD4',    // second
+      '5OliJhWWHgg'
+    ];
+
+    let current = 0;
+    const centerEl = document.getElementById('vid-center');
+    const leftEl = document.getElementById('vid-left');
+    const rightEl = document.getElementById('vid-right');
+    const prevBtn = document.getElementById('car-prev');
+    const nextBtn = document.getElementById('car-next');
+
+    function setIframe(target, id){
+      target.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.title = 'Past Work';
+      iframe.allow = 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.loading = 'lazy';
+      iframe.src = `https://www.youtube.com/embed/${id}`;
+      target.appendChild(iframe);
     }
 
-    /** Week helpers **/
-    function weekStart(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x; } // Sunday start
-    function weekKeyFor(d){ const s=weekStart(d); return `${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`; }
+    function render(){
+      const len = videos.length;
+      const prevIndex = (current - 1 + len) % len;
+      const nextIndex = (current + 1) % len;
 
-    /** State **/
-    function blankState(){ const o={ __weekKey: weekKeyFor(new Date()) }; for(const day of DAYS) o[day]=[]; o[FUTURE]=[]; return o; }
-    function load(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||blankState(); }catch{return blankState();} }
-    function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch{} }
+      setIframe(centerEl, videos[current]);
+      setIframe(leftEl, videos[prevIndex]);
+      setIframe(rightEl, videos[nextIndex]);
 
-    let state=load();
+      leftEl.onclick = ()=>{ current = prevIndex; render(); };
+      rightEl.onclick = ()=>{ current = nextIndex; render(); };
+    }
 
-    // Ensure we reset week boards when a new week begins, but keep Future Tasks intact
-    (function enforceWeek(){
-      const currentKey=weekKeyFor(new Date());
-      const storedKey=state.__weekKey;
-      if(storedKey!==currentKey){
-        const future=(state && Array.isArray(state[FUTURE]))? state[FUTURE] : [];
-        state=blankState();
-        state.__weekKey=currentKey;
-        state[FUTURE]=future; // preserve
-        save();
-      }
-    })();
+    prevBtn.addEventListener('click', ()=>{ current = (current - 1 + videos.length) % videos.length; render(); });
+    nextBtn.addEventListener('click', ()=>{ current = (current + 1) % videos.length; render(); });
 
-    /** DOM builders **/
-    function buildDayOptions(){ const sel=$('#taskDay'); sel.innerHTML=""; for(const d of DAYS) sel.append(new Option(d,d)); sel.append(new Option(FUTURE,FUTURE)); sel.value=DAYS[new Date().getDay()]; }
-    function buildColumns(){ const wrap=$('#columns'); wrap.innerHTML=""; const today=new Date().getDay(); for(const [i,d] of DAYS.entries()) wrap.append(column(d,i===today)); const fwrap=$('#futureRow'); fwrap.innerHTML=""; fwrap.append(column(FUTURE,false)); }
-    function column(day,isToday){ const c=document.createElement('div'); c.className='column'+(isToday?' today':''); c.dataset.day=day; const h=document.createElement('div'); h.className='col-head'; const h3=document.createElement('h3'); h3.textContent=day; h.append(h3); const b=document.createElement('span'); b.className='badge'; b.dataset.badgeFor=day; b.textContent='0'; h.append(b); const l=document.createElement('ul'); l.className='list'; l.dataset.day=day; enableDrops(l); c.append(h,l); return c; }
+    // Keyboard nav when section is in view
+    document.addEventListener('keydown', (e)=>{
+      const work = document.getElementById('work');
+      const rect = work.getBoundingClientRect();
+      const inView = rect.top < window.innerHeight && rect.bottom > 0;
+      if(!inView) return;
+      if(e.key === 'ArrowLeft') prevBtn.click();
+      if(e.key === 'ArrowRight') nextBtn.click();
+    });
 
-    /** Rendering **/
-    function renderDay(day){ const l=document.querySelector(`.list[data-day="${CSS.escape(day)}"]`); if(!l) return; l.innerHTML=''; const tasks=state[day]||[]; for(const t of tasks) l.append(taskItem(t,day)); const b=document.querySelector(`.badge[data-badge-for="${CSS.escape(day)}"]`); if(b) b.textContent=tasks.length; }
-    function renderAll(){ for(const d of [...DAYS,FUTURE]) renderDay(d); }
+    // Touch swipe on center
+    let startX = null;
+    centerEl.addEventListener('touchstart', (e)=>{ startX = e.touches[0].clientX; }, {passive:true});
+    centerEl.addEventListener('touchmove', (e)=>{
+      if(startX===null) return;
+      const dx = e.touches[0].clientX - startX;
+      if(Math.abs(dx) > 40){ (dx<0 ? nextBtn : prevBtn).click(); startX=null; }
+    }, {passive:true});
 
-    function taskItem(task,day){ const li=document.createElement('li'); li.className='task'+(task.done?' done':''); li.draggable=true; li.dataset.id=task.id; li.dataset.day=day;
-      li.addEventListener('dragstart',ev=>{ li.classList.add('dragging'); try{ev.dataTransfer.effectAllowed='move';}catch{} ev.dataTransfer.setData('text/plain', JSON.stringify({from:day,id:task.id})); });
-      li.addEventListener('dragend',()=> li.classList.remove('dragging'));
-      const chk=document.createElement('button'); chk.className='icon-btn success'; chk.textContent='✓'; chk.title='Toggle done'; chk.addEventListener('click',()=>{ task.done=!task.done; save(); renderDay(day); });
-      const txt=document.createElement('div'); txt.className='title'; txt.textContent=task.text; txt.title=task.text;
-      const del=document.createElement('button'); del.className='icon-btn danger'; del.textContent='🗑'; del.title='Delete task'; del.addEventListener('click',()=>{ state[day]=state[day].filter(t=>t.id!==task.id); save(); renderDay(day); });
-      li.append(chk,txt,del); return li; }
-
-    /** DnD **/
-    function enableDrops(l){ l.addEventListener('dragover',ev=>{ ev.preventDefault(); l.classList.add('drag-over'); }); l.addEventListener('dragleave',()=> l.classList.remove('drag-over')); l.addEventListener('drop',ev=>{ ev.preventDefault(); l.classList.remove('drag-over'); try{ const p=JSON.parse(ev.dataTransfer.getData('text/plain')); moveTask(p.from,l.dataset.day,p.id); }catch{} }); }
-    function moveTask(from,to,id){ if(!state[from]) return; const i=state[from].findIndex(t=>t.id===id); if(i===-1) return; const [task]=state[from].splice(i,1); state[to].push(task); save(); renderDay(from); renderDay(to); }
-
-    /** Add task **/
-    function onAdd(){ const text=$('#taskText').value.trim(); const day=$('#taskDay').value; if(!text) return; const t={id:uid(), text, done:false}; state[day].push(t); save(); $('#taskText').value=''; renderDay(day); }
-
-    /** Theme **/
-    function applyTheme(theme){ document.documentElement.setAttribute('data-theme',theme); const t=$('#themeToggle'); if(t) t.checked=(theme==='light'); try{ localStorage.setItem(THEME_KEY, theme);}catch{} }
-    function initTheme(){ let theme='dark'; try{ theme=localStorage.getItem(THEME_KEY)||'dark'; }catch{} applyTheme(theme); const t=$('#themeToggle'); t.addEventListener('change',()=> applyTheme(t.checked?'light':'dark')); }
-
-    function init(){ renderHeader(); buildDayOptions(); buildColumns(); renderAll(); initTheme(); $('#addBtn').addEventListener('click', onAdd); $('#taskText').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); onAdd(); } }); }
-    init();
-  })();
+    // Initial render
+    render();
   </script>
 </body>
 </html>
