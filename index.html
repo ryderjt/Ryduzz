@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>  <!-- Open Graph (Discord, iMessage, etc.) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ryderjt.github.io/ryduzz/">
+  <meta property="og:title" content="ryduzz • Video Editor">
+  <meta property="og:description" content="Professional video editor (AE, PR, DaVinci, CapCut). 100M+ views. Shorts & long-form.">
+  <meta property="og:image" content="https://ryderjt.github.io/ryduzz/thumbnail.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ryduzz — video editor portfolio banner">
+  <meta property="og:site_name" content="ryduzz">
+  <link rel="canonical" href="https://ryderjt.github.io/ryduzz/">
+
+  <!-- Twitter (X) -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ryduzz — Video Editor">
+  <meta name="twitter:description" content="Professional video editor (AE, PR, DaVinci, CapCut). 100M+ views. Shorts & long-form.">
+  <meta name="twitter:image" content="https://ryderjt.github.io/ryduzz/thumbnail.jpg">
+
+  <!-- Misc -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ryduzz</title>
+  <meta name="description" content="ryduzz — Professional video editor (AE, PR, DaVinci, CapCut). 100M+ views. Shorts & long-form." />
+
+  <style>
+    :root{
+      --bg:#0b0b0f;
+      --card:#111118;
+      --card-2:#0f0f15;
+      --text:#e9e9ef;
+      --muted:#a6a6b2;
+      --line:#262635;
+      --accent-1:#8a2be2;
+      --accent-2:#4cc9f0;
+      --accent-3:#22d3ee;
+      --radius:14px;
+      --maxw:1100px;
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+      --ease: cubic-bezier(.22,.61,.36,1);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Georgia","Garamond","Times New Roman",serif}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;height:auto;display:block}
+    .container{width:min(100%, var(--maxw));margin-inline:auto;padding:0 20px}
+
+    /* Soft animated background */
+    .bg-orb{
+      position:fixed; inset:auto auto 10% -10%;
+      width:60vmax; height:60vmax; z-index:-1;
+      filter: blur(80px) saturate(120%); opacity:.25;
+      background:
+        radial-gradient(40% 40% at 30% 30%, var(--accent-1), transparent 70%),
+        radial-gradient(45% 45% at 70% 60%, var(--accent-2), transparent 60%),
+        radial-gradient(35% 35% at 60% 20%, var(--accent-3), transparent 65%);
+      animation: float 18s var(--ease) infinite alternate;
+    }
+    @keyframes float { 0%{transform:translate(0,0) rotate(0)} 100%{transform:translate(4%,-3%) rotate(12deg)} }
+
+    header{position:sticky; top:0; z-index:50; backdrop-filter: blur(8px);
+      background:linear-gradient(to bottom, rgba(11,11,15,.8), rgba(11,11,15,.4));
+      border-bottom:1px solid var(--line);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0;}
+    .brand{font-weight:700; letter-spacing:.5px; font-size:20px; line-height:1;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .nav a{font-size:14px; color:var(--muted); padding:8px 10px; border-radius:10px}
+    .nav a:hover{color:var(--text); background:rgba(255,255,255,.04)}
+
+    .hero{padding:72px 0 36px}
+    .title{font-size:clamp(36px,6vw,64px); line-height:1.05; margin:0 0 12px; letter-spacing:.4px}
+    .subtitle{color:var(--muted); font-size:clamp(16px,2.4vw,20px); margin:0 0 28px}
+    .badge{display:inline-flex; align-items:center; gap:10px; font-size:14px; padding:10px 14px; border-radius:999px;
+      border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.08)); box-shadow:var(--shadow)}
+    .cta-row{display:flex; flex-wrap:wrap; gap:12px; margin:24px 0 32px}
+    .btn{display:inline-flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; font-weight:600;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.1));
+      transition: transform .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);}
+    .btn:hover{transform:translateY(-1px); border-color:#34344a; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12))}
+    .btn.primary{background:linear-gradient(90deg, rgba(138,43,226,.18), rgba(76,201,240,.18)); border-color:#3a3a55}
+
+    .socials{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px}
+    .chip{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; font-size:14px; color:var(--muted);
+      border:1px solid var(--line); background:rgba(255,255,255,.03)}
+    .chip:hover{color:var(--text); background:rgba(255,255,255,.06)}
+
+    section{padding:56px 0; border-top:1px solid var(--line)}
+    h2{font-size:clamp(24px,3.6vw,32px); margin:0 0 18px}
+    p{color:#d7d7df; font-size:18px; line-height:1.6}
+
+    /* Grid + card */
+    .grid{display:grid; gap:18px; grid-template-columns: repeat(12, 1fr)}
+    .card{background:linear-gradient(180deg, var(--card), var(--card-2)); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow)}
+    .span-4{grid-column:span 4} .span-6{grid-column:span 6} .span-8{grid-column:span 8} .span-12{grid-column:1/-1}
+    @media (max-width:960px){ .span-4,.span-6,.span-8{grid-column:1/-1} }
+
+    .list{margin:0; padding-left:18px} .list li{margin:8px 0; color:#dcdce4}
+
+    /* Embeds */
+    .embed{position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line); aspect-ratio:16/9; background:#0c0c13}
+    .embed iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+
+    /* Carousel (center card with blurred side cards behind) */
+    .carousel{position:relative}
+    .stage{position:relative; aspect-ratio:16/9; margin-bottom:10px}
+    .card-vid{
+      position:absolute; top:0; bottom:0; border-radius:14px; overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow);
+      background:#0c0c13;
+      transition: transform .5s var(--ease), filter .5s var(--ease), opacity .5s var(--ease), z-index .5s var(--ease);
+    }
+    .card-vid iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+
+    .center{left:50%; transform:translateX(-50%) scale(1); width:60%; z-index:3}
+    .side{top:3%; width:32%; filter: blur(1.1px) grayscale(8%) opacity(.9); z-index:2; transform: scale(.93)}
+    .left{left:2%}
+    .right{right:2%}
+
+    .car-arrow{
+      position:absolute; top:50%; transform:translateY(-50%);
+      background:rgba(255,255,255,.08); border:1px solid var(--line);
+      color:var(--text); padding:10px 12px; border-radius:12px; cursor:pointer; backdrop-filter: blur(5px); z-index:5;
+    }
+    .car-arrow:hover{background:rgba(255,255,255,.12)}
+    .car-prev{left:12px} .car-next{right:12px}
+
+    .textlink{display:inline-block; color:var(--muted); text-decoration:underline; text-underline-offset:3px}
+    .textlink:hover{color:var(--text)}
+
+    /* Reveal on scroll */
+    .reveal{opacity:0; transform: translateY(14px); transition: all .7s var(--ease)}
+    .reveal.in{opacity:1; transform:none}
+
+    footer{padding:36px 0 64px; color:var(--muted); text-align:center}
+  </style>
+</head>
+<body>
+  <div class="bg-orb" aria-hidden="true"></div>
+
+  <header>
+    <div class="container nav">
+      <div class="brand" aria-label="Site brand">RYDUZZ</div>
+      <nav aria-label="Primary">
+        <a href="#about">About</a>
+        <a href="#work">Work</a>
+        <a href="#services">Services</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero container">
+      <span class="badge reveal" aria-label="Stats">100M+ views • 5+ years editing • AE · PR · DaVinci · CapCut</span>
+      <h1 class="title reveal" style="margin-top:14px">Editor for Shorts & Long-Form Content</h1>
+      <p class="subtitle reveal">I’m <strong>ryduzz</strong> — a video editor specializing in professional edits, clean motion graphics, and cinematic looks that help creators and brands stand out.</p>
+
+      <div class="cta-row reveal">
+        <a class="btn primary" href="#work" id="view-portfolio-btn">View Portfolio</a>
+        <a class="btn" href="https://www.youtube.com/@ryduzzz" target="_blank" rel="noopener" title="Past work on YouTube">Past Work</a>
+        <a class="btn" href="#contact">Hire Me</a>
+      </div>
+
+      <!-- Socials -->
+      <div class="socials reveal" aria-label="Social links">
+        <a class="chip" href="https://www.tiktok.com/@ryduzzz" target="_blank" rel="noopener" aria-label="TikTok">TikTok</a>
+        <a class="chip" href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
+        <a class="chip" href="https://www.capcut.com/user-info?lang=en" target="_blank" rel="noopener" aria-label="CapCut">CapCut</a>
+        <a class="chip" href="https://www.youtube.com/@ryduzzz" target="_blank" rel="noopener" aria-label="YouTube">YouTube</a>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="container grid">
+        <div class="card span-8 reveal">
+          <h2>About Me</h2>
+          <p>
+            Hi, I’m <strong>Ryduzz</strong>. I’ve been editing for over 5 years and I love making videos that actually grab attention. 
+            I work in <em>After Effects</em>, <em>Premiere Pro</em>, and <em>DaVinci Resolve</em> to create engaging content that maximizes retention. 
+            Across my edits I’ve pulled in over <strong>100 million views</strong>, and I specialize in turning raw clips into 
+            content that pops on Shorts, Reels, and YouTube.
+          </p>
+          <p>
+            I’m available for freelance work with creators, streamers, and brands. If you have a vision, I’ll help shape it into a clean, compelling edit.
+          </p>
+        </div>
+
+        <div class="card span-4 reveal" aria-label="Quick facts">
+          <h2 style="margin-bottom:10px">Quick Facts</h2>
+          <ul class="list">
+            <li>5+ years editing experience</li>
+            <li>CapCut Affiliate Creator</li>
+            <li>100M+ views across edits</li>
+            <li>Fast, reliable turnaround</li>
+            <li>Clear communication & revisions</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORK (CAROUSEL) -->
+    <section id="work">
+      <div class="container">
+        <h2 class="reveal">Past Work</h2>
+
+        <div class="card reveal carousel" aria-label="Past Work Carousel">
+          <div class="stage" id="stage">
+            <div class="card-vid center" id="vid-center" aria-label="Current video"></div>
+            <div class="card-vid side left" id="vid-left" aria-label="Previous video (click to open)"></div>
+            <div class="card-vid side right" id="vid-right" aria-label="Next video (click to open)"></div>
+            <button class="car-arrow car-prev" id="car-prev" aria-label="Previous video">‹</button>
+            <button class="car-arrow car-next" id="car-next" aria-label="Next video">›</button>
+          </div>
+        </div>
+
+        <!-- Text link under carousel -->
+        <div class="reveal" style="text-align:center; margin-top:6px">
+          <a class="textlink" href="https://drive.google.com/drive/folders/1yhpCQUQz16OSSIvKOt3jNoGMWS0DmQCS?usp=drive_link" target="_blank" rel="noopener">Full Portfolio</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES / RATES -->
+    <section id="services">
+      <div class="container">
+        <h2 class="reveal">Services & Rates</h2>
+
+        <div class="grid">
+          <div class="card span-6 reveal">
+            <h3 style="margin-top:0">What I Offer</h3>
+            <ul class="list">
+              <li>Short-form (YouTube Shorts, TikTok, Reels)</li>
+              <li>Long-form (gameplay, commentary, vlogs, education)</li>
+              <li>Motion graphics, transitions, pacing, sound design</li>
+              <li>Color grading and cinematic looks</li>
+              <li>Captions (auto or stylized), thumbnails on request</li>
+            </ul>
+          </div>
+
+          <div class="card span-6 reveal">
+            <h3 style="margin-top:0">Rates</h3>
+            <ul class="list">
+              <li><strong>Short-form (≤ 60s):</strong> from $10 USD</li>
+              <li><strong>Long-form:</strong> $10 USD per edited minute (e.g., 5 min = $50)</li>
+              <li><em>Pricing scales with complexity and turnaround.</em></li>
+              <li>Bundle plans available for consistent weekly content.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section id="reviews">
+      <div class="container">
+        <h2 class="reveal">Reviews</h2>
+        <div class="grid">
+          <div class="card span-4 reveal">
+            <div style="color:#ffd166;letter-spacing:2px;margin-bottom:6px">★★★★★</div>
+            <p>ryduzz made a great intro animation for my minecraft mod, and was kind enough to redo it for me when I decided I wanted to change the color and logo 😭 bro you're the goat highly recommend him</p>
+            <p style="color:var(--muted)">— h1ggsk</p>
+          </div>
+        </div>
+        <p class="reveal" style="margin-top:16px;color:var(--muted)">Want to leave a review? Contact me for a form or drop feedback in my Discord.</p>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="container">
+        <h2 class="reveal">Work With Me</h2>
+        <div class="grid">
+          <div class="card span-8 reveal">
+            <h3 style="margin-top:0">What I Need From You</h3>
+            <ul class="list">
+              <li>A reference video (style you’re going for)</li>
+              <li>Timestamps or key moments from your footage</li>
+              <li>Your availability and timezone</li>
+              <li>Your deadline and how many videos you need</li>
+              <li>Any specific requests (text, pacing, effects, music, etc.)</li>
+            </ul>
+            <p style="color:var(--muted);margin-top:10px">Please be respectful — I may not always reply instantly, but I’ll get back to you as soon as I can.</p>
+          </div>
+
+          <div class="card span-4 reveal" aria-label="Contact methods">
+            <h3 style="margin-top:0">Contact</h3>
+            <p class="inline-copy" style="margin:0 0 10px">
+              <span id="email-text">ryduzz69@gmail.com</span>
+              <button class="copy-btn" data-copy="#email-text">Copy</button>
+            </p>
+            <p class="inline-copy" style="margin:0 0 10px">
+              <span id="discord-text">Discord: ryduzzz</span>
+              <button class="copy-btn" data-copy="#discord-text">Copy</button>
+            </p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px">
+              <a class="btn" href="mailto:ryduzz69@gmail.com">Email Me</a>
+              <a class="btn" href="https://discord.gg/SrZ2Um6KbA">Discord Server</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="year"></span> ryduzz • Video Editor
+  </footer>
+
+  <script>
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Reveal on scroll
+    const els = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      })
+    },{threshold:.18});
+    els.forEach(el=>io.observe(el));
+
+    // Copy to clipboard
+    document.querySelectorAll('.copy-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const sel = btn.getAttribute('data-copy');
+        const el = document.querySelector(sel);
+        if(!el) return;
+        const text = el.textContent.replace(/^.*?:\s*/,'');
+        navigator.clipboard.writeText(text).then(()=>{
+          const prev = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(()=>btn.textContent = prev, 1200);
+        });
+      });
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        const id = a.getAttribute('href');
+        if(id.length > 1){
+          e.preventDefault();
+          document.querySelector(id)?.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      });
+    });
+
+    // ------------------ Carousel Logic ------------------
+    // Your two YouTube Shorts (first is default):
+    const videos = [
+      'ol3FoOwgLLs',   // first (default)
+      'BL-ngsWZAD4',    // second
+      'PnoWs7L8dDY'
+    ];
+
+    let current = 0;
+    const centerEl = document.getElementById('vid-center');
+    const leftEl = document.getElementById('vid-left');
+    const rightEl = document.getElementById('vid-right');
+    const prevBtn = document.getElementById('car-prev');
+    const nextBtn = document.getElementById('car-next');
+
+    function setIframe(target, id){
+      target.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.title = 'Past Work';
+      iframe.allow = 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.loading = 'lazy';
+      iframe.src = `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1`;
+      target.appendChild(iframe);
+    }
+
+
+    function render(){
+      const len = videos.length;
+      const prevIndex = (current - 1 + len) % len;
+      const nextIndex = (current + 1) % len;
+
+      setIframe(centerEl, videos[current]);
+      setIframe(leftEl, videos[prevIndex]);
+      setIframe(rightEl, videos[nextIndex]);
+
+      leftEl.onclick = ()=>{ current = prevIndex; render(); };
+      rightEl.onclick = ()=>{ current = nextIndex; render(); };
+    }
+
+    prevBtn.addEventListener('click', ()=>{ current = (current - 1 + videos.length) % videos.length; render(); });
+    nextBtn.addEventListener('click', ()=>{ current = (current + 1) % videos.length; render(); });
+
+    // Keyboard nav when section is in view
+    document.addEventListener('keydown', (e)=>{
+      const work = document.getElementById('work');
+      const rect = work.getBoundingClientRect();
+      const inView = rect.top < window.innerHeight && rect.bottom > 0;
+      if(!inView) return;
+      if(e.key === 'ArrowLeft') prevBtn.click();
+      if(e.key === 'ArrowRight') nextBtn.click();
+    });
+
+    // Touch swipe on center
+    let startX = null;
+    centerEl.addEventListener('touchstart', (e)=>{ startX = e.touches[0].clientX; }, {passive:true});
+    centerEl.addEventListener('touchmove', (e)=>{
+      if(startX===null) return;
+      const dx = e.touches[0].clientX - startX;
+      if(Math.abs(dx) > 40){ (dx<0 ? nextBtn : prevBtn).click(); startX=null; }
+    }, {passive:true});
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
