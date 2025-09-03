@@ -97,6 +97,27 @@
         height: auto;
         display: block;
       }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(-45deg, var(--accent-1), var(--accent-2));
+        background-size: 400% 400%;
+        animation: gradient 20s ease infinite;
+        opacity: 0.15;
+      }
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
       .container {
         width: min(100%, var(--maxw));
         margin-inline: auto;
@@ -228,6 +249,38 @@
         background: var(--accent-1);
         color: #fff;
         border-color: var(--accent-1);
+      }
+      .btn.primary:hover {
+        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+        border-color: transparent;
+      }
+
+      #scroll-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--accent-1);
+        color: #fff;
+        border: none;
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+        z-index: 100;
+      }
+      #scroll-top.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #scroll-top:hover {
+        transform: translateY(-2px);
+        background: var(--accent-2);
       }
 
       .socials {
@@ -747,6 +800,8 @@
 
     <footer>© <span id="year"></span> ryduzz • Video Editor</footer>
 
+    <button id="scroll-top" aria-label="Scroll to top">↑</button>
+
     <script>
       // Year
       document.getElementById("year").textContent = new Date().getFullYear();
@@ -906,6 +961,19 @@
         },
         { passive: true },
       );
+
+      // Scroll to top button
+      const scrollBtn = document.getElementById("scroll-top");
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 300) {
+          scrollBtn.classList.add("show");
+        } else {
+          scrollBtn.classList.remove("show");
+        }
+      });
+      scrollBtn.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
 
       // Initial render
       render();
