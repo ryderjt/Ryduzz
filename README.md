@@ -4,7 +4,7 @@
 [![Last Commit](https://img.shields.io/github/last-commit/ryderjt/ryduzz?logo=github)](https://github.com/ryderjt/ryduzz/commits)
 [![Repo Size](https://img.shields.io/github/repo-size/ryderjt/ryduzz)](https://github.com/ryderjt/ryduzz)
 
-A minimalist portfolio website for the video editor known as **ryduzz**, showcasing past work and contact information.
+A minimalist portfolio website showcasing my work.
 
 ## Development
 
