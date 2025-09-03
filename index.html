@@ -188,6 +188,18 @@
         font-size: clamp(16px, 2.4vw, 20px);
         margin: 0 0 28px;
       }
+      /* Text effects */
+      .gradient-text {
+        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        display: inline-block;
+      }
+      .text-glow {
+        text-shadow: 0 0 8px var(--accent-2);
+      }
       .badge {
         display: inline-flex;
         align-items: center;
@@ -466,7 +478,9 @@
   <body>
     <header>
       <div class="container nav">
-        <div class="brand" aria-label="Site brand">RYDUZZ</div>
+        <div class="brand gradient-text text-glow" aria-label="Site brand">
+          RYDUZZ
+        </div>
         <nav aria-label="Primary">
           <a href="#about">About</a>
           <a href="#work">Work</a>
@@ -487,7 +501,10 @@
         <span class="badge reveal" aria-label="Stats"
           >100M+ views • 5+ years editing • AE · PR · DaVinci · CapCut</span
         >
-        <h1 class="title reveal" style="margin-top: 14px">
+        <h1
+          class="title reveal gradient-text text-glow"
+          style="margin-top: 14px"
+        >
           Editor for Shorts & Long-Form Content
         </h1>
         <p class="subtitle reveal">
