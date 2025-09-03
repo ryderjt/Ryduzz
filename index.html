@@ -125,22 +125,53 @@
         line-height: 1;
         color: var(--text);
       }
-      .nav a,
-      .theme-toggle {
+      .nav a {
         font-size: 14px;
         color: var(--muted);
         padding: 8px 10px;
         border-radius: 10px;
       }
-      .nav a:hover,
-      .theme-toggle:hover {
+      .nav a:hover {
         color: var(--accent-1);
         background: rgba(0, 0, 0, 0.05);
       }
-      .theme-toggle {
-        border: none;
-        background: none;
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        inset: 0;
+        background: var(--line);
+        border-radius: 12px;
         cursor: pointer;
+        transition: background 0.2s var(--ease);
+      }
+      .slider::before {
+        content: "";
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        left: 2px;
+        top: 2px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s var(--ease);
+      }
+      .switch input:checked + .slider {
+        background: var(--accent-1);
+      }
+      .switch input:checked + .slider::before {
+        transform: translateX(20px);
       }
 
       .hero {
@@ -406,8 +437,7 @@
       html.dark header {
         background: rgba(0, 0, 0, 0.8);
       }
-      html.dark .nav a:hover,
-      html.dark .theme-toggle:hover {
+      html.dark .nav a:hover {
         background: rgba(255, 255, 255, 0.1);
       }
       html.dark .badge {
@@ -443,13 +473,10 @@
           <a href="#services">Services</a>
           <a href="#reviews">Reviews</a>
           <a href="#contact">Contact</a>
-          <button
-            id="theme-toggle"
-            class="theme-toggle"
-            aria-label="Toggle dark mode"
-          >
-            Dark Mode
-          </button>
+          <label class="switch" aria-label="Toggle dark mode">
+            <input type="checkbox" id="theme-toggle" />
+            <span class="slider"></span>
+          </label>
         </nav>
       </div>
     </header>
@@ -735,7 +762,7 @@
           "content",
           mode === "dark" ? "#000000" : "#ffffff",
         );
-        themeToggle.textContent = mode === "dark" ? "Light Mode" : "Dark Mode";
+        themeToggle.checked = mode === "dark";
       }
 
       const stored = localStorage.getItem("theme");
@@ -744,8 +771,8 @@
       ).matches;
       setTheme(stored || (prefersDark ? "dark" : "light"));
 
-      themeToggle.addEventListener("click", () => {
-        const newTheme = root.classList.contains("dark") ? "light" : "dark";
+      themeToggle.addEventListener("change", () => {
+        const newTheme = themeToggle.checked ? "dark" : "light";
         setTheme(newTheme);
         localStorage.setItem("theme", newTheme);
       });
