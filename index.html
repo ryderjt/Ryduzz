@@ -23,10 +23,16 @@
   <meta name="theme-color" content="#0b0b0f">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ryduzz</title>
-  <meta name="description" content="ryduzz — Professional video editor (AE, PR, DaVinci, CapCut). 100M+ views. Shorts & long-form." />
+    <title>ryduzz</title>
+    <meta name="description" content="ryduzz — Professional video editor (AE, PR, DaVinci, CapCut). 100M+ views. Shorts & long-form." />
 
-  <style>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/coolvetica" rel="stylesheet">
+
+    <style>
     :root{
       --bg:#0b0b0f;
       --card:#111118;
@@ -44,7 +50,7 @@
     }
 
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Georgia","Garamond","Times New Roman",serif;position:relative}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,sans-serif;position:relative}
     body::before{
       content:"";
       position:fixed; inset:0;
@@ -81,7 +87,7 @@
       border-bottom:1px solid var(--line);
     }
     .nav{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0;}
-    .brand{font-weight:700; letter-spacing:.5px; font-size:20px; line-height:1;
+    .brand{font-family:"Coolvetica","Inter",sans-serif; font-weight:700; letter-spacing:.5px; font-size:20px; line-height:1;
       background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
       -webkit-background-clip:text; background-clip:text; color:transparent;
       background-size:200% 200%; animation:brand-slide 6s linear infinite;
@@ -91,7 +97,7 @@
     .nav a:hover{color:var(--text); background:rgba(255,255,255,.04)}
 
     .hero{padding:72px 0 36px}
-    .title{font-size:clamp(36px,6vw,64px); line-height:1.05; margin:0 0 12px; letter-spacing:.4px}
+    .title{font-family:'DM Serif Display',serif; font-size:clamp(36px,6vw,64px); line-height:1.05; margin:0 0 12px; letter-spacing:.4px}
     .subtitle{color:var(--muted); font-size:clamp(16px,2.4vw,20px); margin:0 0 28px}
     .badge{display:inline-flex; align-items:center; gap:10px; font-size:14px; padding:10px 14px; border-radius:999px;
       border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.08)); box-shadow:var(--shadow)}
@@ -109,7 +115,7 @@
     .chip:hover{color:var(--text); background:rgba(255,255,255,.06)}
 
     section{padding:56px 0; border-top:1px solid var(--line)}
-    h2{font-size:clamp(24px,3.6vw,32px); margin:0 0 18px}
+    h2{font-family:'DM Serif Display',serif; font-size:clamp(24px,3.6vw,32px); margin:0 0 18px}
     p{color:#d7d7df; font-size:18px; line-height:1.6}
 
     /* Grid + card */
