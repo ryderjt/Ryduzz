@@ -36,7 +36,7 @@
 
     <!-- Misc -->
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#ffffff" id="theme-color" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ryduzz</title>
@@ -60,6 +60,18 @@
         --maxw: 1100px;
         --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+
+      html.dark {
+        --bg: #000000;
+        --card: #1c1c1e;
+        --card-2: #2c2c2e;
+        --text: #f5f5f7;
+        --muted: #a1a1a6;
+        --line: #3a3a3c;
+        --accent-1: #0a84ff;
+        --accent-2: #409cff;
+        --accent-3: #ffffff;
       }
 
       * {
@@ -113,15 +125,22 @@
         line-height: 1;
         color: var(--text);
       }
-      .nav a {
+      .nav a,
+      .theme-toggle {
         font-size: 14px;
         color: var(--muted);
         padding: 8px 10px;
         border-radius: 10px;
       }
-      .nav a:hover {
+      .nav a:hover,
+      .theme-toggle:hover {
         color: var(--accent-1);
         background: rgba(0, 0, 0, 0.05);
+      }
+      .theme-toggle {
+        border: none;
+        background: none;
+        cursor: pointer;
       }
 
       .hero {
@@ -383,6 +402,35 @@
         color: var(--muted);
         text-align: center;
       }
+
+      html.dark header {
+        background: rgba(0, 0, 0, 0.8);
+      }
+      html.dark .nav a:hover,
+      html.dark .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      html.dark .badge {
+        background: linear-gradient(180deg, #1c1c1e, #2c2c2e);
+      }
+      html.dark .btn:not(.primary) {
+        background: linear-gradient(180deg, #1c1c1e, #2c2c2e);
+      }
+      html.dark .btn:not(.primary):hover {
+        background: linear-gradient(180deg, #2c2c2e, #3a3a3c);
+      }
+      html.dark .chip {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      html.dark .chip:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+      html.dark .car-arrow {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      html.dark .car-arrow:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
     </style>
   </head>
   <body>
@@ -395,6 +443,13 @@
           <a href="#services">Services</a>
           <a href="#reviews">Reviews</a>
           <a href="#contact">Contact</a>
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            aria-label="Toggle dark mode"
+          >
+            Dark Mode
+          </button>
         </nav>
       </div>
     </header>
@@ -668,6 +723,32 @@
     <script>
       // Year
       document.getElementById("year").textContent = new Date().getFullYear();
+
+      // Theme toggle
+      const themeToggle = document.getElementById("theme-toggle");
+      const root = document.documentElement;
+      const themeMeta = document.getElementById("theme-color");
+
+      function setTheme(mode) {
+        root.classList.toggle("dark", mode === "dark");
+        themeMeta.setAttribute(
+          "content",
+          mode === "dark" ? "#000000" : "#ffffff",
+        );
+        themeToggle.textContent = mode === "dark" ? "Light Mode" : "Dark Mode";
+      }
+
+      const stored = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      setTheme(stored || (prefersDark ? "dark" : "light"));
+
+      themeToggle.addEventListener("click", () => {
+        const newTheme = root.classList.contains("dark") ? "light" : "dark";
+        setTheme(newTheme);
+        localStorage.setItem("theme", newTheme);
+      });
 
       // Reveal on scroll
       const els = document.querySelectorAll(".reveal");
