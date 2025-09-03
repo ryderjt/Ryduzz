@@ -26,6 +26,10 @@
   <title>ryduzz</title>
   <meta name="description" content="ryduzz — Professional video editor (AE, PR, DaVinci, CapCut). 100M+ views. Shorts & long-form." />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --bg:#0b0b0f;
@@ -44,7 +48,7 @@
     }
 
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Georgia","Garamond","Times New Roman",serif;position:relative}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;position:relative}
     body::before{
       content:"";
       position:fixed; inset:0;
@@ -79,6 +83,7 @@
     header{position:sticky; top:0; z-index:50; backdrop-filter: blur(8px);
       background:linear-gradient(to bottom, rgba(11,11,15,.8), rgba(11,11,15,.4));
       border-bottom:1px solid var(--line);
+      box-shadow:0 2px 10px rgba(0,0,0,.4);
     }
     .nav{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0;}
     .brand{font-weight:700; letter-spacing:.5px; font-size:20px; line-height:1;
@@ -91,7 +96,9 @@
     .nav a:hover{color:var(--text); background:rgba(255,255,255,.04)}
 
     .hero{padding:72px 0 36px}
-    .title{font-size:clamp(36px,6vw,64px); line-height:1.05; margin:0 0 12px; letter-spacing:.4px}
+    .title{font-size:clamp(36px,6vw,64px); line-height:1.05; margin:0 0 12px; letter-spacing:.4px;
+      background:linear-gradient(90deg, var(--accent-2), var(--accent-1));
+      -webkit-background-clip:text; background-clip:text; color:transparent;}
     .subtitle{color:var(--muted); font-size:clamp(16px,2.4vw,20px); margin:0 0 28px}
     .badge{display:inline-flex; align-items:center; gap:10px; font-size:14px; padding:10px 14px; border-radius:999px;
       border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.08)); box-shadow:var(--shadow)}
@@ -101,7 +108,8 @@
       background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.1));
       transition: transform .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);}
     .btn:hover{transform:translateY(-1px); border-color:#34344a; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12))}
-    .btn.primary{background:linear-gradient(90deg, rgba(138,43,226,.18), rgba(76,201,240,.18)); border-color:#3a3a55}
+    .btn.primary{background:linear-gradient(90deg, var(--accent-1), var(--accent-2)); border-color:#4c4c66; color:var(--text); box-shadow:0 4px 12px rgba(0,0,0,.2)}
+    .btn.primary:hover{filter:brightness(1.1)}
 
     .socials{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px}
     .chip{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; font-size:14px; color:var(--muted);
