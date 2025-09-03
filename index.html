@@ -49,6 +49,19 @@
     img{max-width:100%;height:auto;display:block}
     .container{width:min(100%, var(--maxw));margin-inline:auto;padding:0 20px}
 
+    /* Animated gradient backdrop */
+    body::before{
+      content:""; position:fixed; inset:0; z-index:-2;
+      background:linear-gradient(115deg, var(--accent-1), var(--accent-2), var(--accent-3));
+      background-size:200% 200%; opacity:.4;
+      animation:gradient-shift 30s var(--ease) infinite;
+    }
+    @keyframes gradient-shift{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+
     /* Soft animated background */
     .bg-orb{
       position:fixed; inset:auto auto 10% -10%;
@@ -68,7 +81,8 @@
     }
     .nav{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0;}
     .brand{font-weight:700; letter-spacing:.5px; font-size:20px; line-height:1;
-      background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+      background: linear-gradient(90deg, var(--accent-2), var(--accent-1), var(--accent-3));
+      background-size:200% 200%; animation:gradient-shift 8s linear infinite;
       -webkit-background-clip:text; background-clip:text; color:transparent;
     }
     .nav a{font-size:14px; color:var(--muted); padding:8px 10px; border-radius:10px}
@@ -85,7 +99,11 @@
       background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.1));
       transition: transform .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);}
     .btn:hover{transform:translateY(-1px); border-color:#34344a; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12))}
-    .btn.primary{background:linear-gradient(90deg, rgba(138,43,226,.18), rgba(76,201,240,.18)); border-color:#3a3a55}
+    .btn.primary{
+      background:linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+      background-size:200% 200%; animation:gradient-shift 6s linear infinite;
+      border-color:#3a3a55;
+    }
 
     .socials{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px}
     .chip{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; font-size:14px; color:var(--muted);
