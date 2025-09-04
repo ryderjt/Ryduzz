@@ -145,6 +145,17 @@
         font-size: 20px;
         line-height: 1;
         color: var(--text);
+        display: inline-block;
+        animation: brand-bounce 2s var(--ease) infinite;
+      }
+      @keyframes brand-bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
       }
       .nav a {
         font-size: 14px;
