@@ -731,6 +731,7 @@
               href="https://forms.gle/ZkUCfJYZiiX8Jt5t6"
               target="_blank"
               rel="noopener"
+              class="textlink"
               >Want to leave a review? Fill out the form and share your experience.</a>
           </p>
         </div>
@@ -846,7 +847,10 @@
           const grid = document.getElementById("reviews-grid");
           rows.forEach((row) => {
             const cols = row.split("\t");
-            const rating = parseInt(cols[1], 10) || 0;
+            const rating =
+              cols
+                .map((c) => parseInt(c, 10))
+                .find((n) => !isNaN(n) && n >= 1 && n <= 5) || 0;
             const feedback = cols[2];
             const name = cols[3] || "Anonymous";
             const card = document.createElement("div");
