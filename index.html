@@ -731,6 +731,7 @@
               href="https://forms.gle/ZkUCfJYZiiX8Jt5t6"
               target="_blank"
               rel="noopener"
+              style="text-decoration: underline"
               >Want to leave a review? Fill out the form and share your experience.</a>
           </p>
         </div>
@@ -842,13 +843,28 @@
       fetch(SHEET_URL)
         .then((r) => r.text())
         .then((text) => {
-          const rows = text.trim().split("\n").slice(1);
+          const lines = text.trim().split("\n");
+          if (!lines.length) return;
+          const headers = lines[0].split("\t").map((h) => h.toLowerCase());
+          const ratingIdx = headers.findIndex(
+            (h) => h.includes("rate") || h.includes("rating"),
+          );
+          const feedbackIdx = headers.findIndex(
+            (h) =>
+              h.includes("feedback") ||
+              h.includes("review") ||
+              h.includes("experience"),
+          );
+          const nameIdx = headers.findIndex((h) => h.includes("name"));
+          const rows = lines.slice(1);
           const grid = document.getElementById("reviews-grid");
           rows.forEach((row) => {
             const cols = row.split("\t");
-            const rating = parseInt(cols[1], 10) || 0;
-            const feedback = cols[2];
-            const name = cols[3] || "Anonymous";
+            const rating =
+              ratingIdx >= 0 ? parseInt(cols[ratingIdx], 10) || 0 : 0;
+            const feedback = feedbackIdx >= 0 ? cols[feedbackIdx] : "";
+            const name =
+              nameIdx >= 0 && cols[nameIdx] ? cols[nameIdx] : "Anonymous";
             const card = document.createElement("div");
             card.className = "card span-4 reveal";
             const star = document.createElement("div");
