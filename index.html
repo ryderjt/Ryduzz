@@ -725,25 +725,16 @@
       <section id="reviews">
         <div class="container">
           <h2 class="reveal">Reviews</h2>
-          <div class="grid">
-            <div class="card span-4 reveal">
-              <div
-                style="color: #ffd166; letter-spacing: 2px; margin-bottom: 6px"
-              >
-                ★★★★★
-              </div>
-              <p>
-                ryduzz made a great intro animation for my minecraft mod, and
-                was kind enough to redo it for me when I decided I wanted to
-                change the color and logo 😭 bro you're the goat highly
-                recommend him
-              </p>
-              <p style="color: var(--muted)">— h1ggsk</p>
-            </div>
-          </div>
+          <div id="reviews-grid" class="grid"></div>
           <p class="reveal" style="margin-top: 16px; color: var(--muted)">
-            Want to leave a review? Contact me for a form or drop feedback in my
-            Discord.
+            Want to leave a review?
+            <a
+              href="https://forms.gle/ZkUCfJYZiiX8Jt5t6"
+              target="_blank"
+              rel="noopener"
+              >Fill out the form</a
+            >
+            and share your experience.
           </p>
         </div>
       </section>
@@ -847,6 +838,40 @@
         { threshold: 0.18 },
       );
       els.forEach((el) => io.observe(el));
+
+      // Load reviews from Google Sheets
+      const SHEET_URL =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmZuh4Dlq-B722FEJc5LKQjslNLJDMUGvKLQM_M2nMlx81D4OUhy_4BKUFDuNm_rRSx8tnxTPZqnBg/pub?output=tsv";
+      fetch(SHEET_URL)
+        .then((r) => r.text())
+        .then((text) => {
+          const rows = text.trim().split("\n").slice(1);
+          const grid = document.getElementById("reviews-grid");
+          rows.forEach((row) => {
+            const cols = row.split("\t");
+            const rating = parseInt(cols[1], 10) || 0;
+            const feedback = cols[2];
+            const name = cols[3] || "Anonymous";
+            const card = document.createElement("div");
+            card.className = "card span-4 reveal";
+            const star = document.createElement("div");
+            star.style.color = "#ffd166";
+            star.style.letterSpacing = "2px";
+            star.style.marginBottom = "6px";
+            star.textContent = "★".repeat(rating) + "☆".repeat(5 - rating);
+            card.appendChild(star);
+            const p = document.createElement("p");
+            p.textContent = feedback;
+            card.appendChild(p);
+            const author = document.createElement("p");
+            author.style.color = "var(--muted)";
+            author.textContent = `— ${name}`;
+            card.appendChild(author);
+            grid.appendChild(card);
+            io.observe(card);
+          });
+        })
+        .catch((err) => console.error("Failed to load reviews", err));
 
       // Copy to clipboard
       document.querySelectorAll(".copy-btn").forEach((btn) => {
