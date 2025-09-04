@@ -60,6 +60,7 @@
         --maxw: 1100px;
         --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+        --gradient: linear-gradient(135deg, var(--accent-1), var(--accent-2));
       }
 
       html.dark {
@@ -102,7 +103,7 @@
         position: fixed;
         inset: 0;
         z-index: -1;
-        background: linear-gradient(-45deg, var(--accent-1), var(--accent-2));
+        background: var(--gradient);
         background-size: 400% 400%;
         animation: gradient 20s ease infinite;
         opacity: 0.15;
@@ -129,8 +130,8 @@
         top: 0;
         z-index: 50;
         backdrop-filter: blur(8px);
-        background: rgba(255, 255, 255, 0.8);
-        border-bottom: 1px solid var(--line);
+        background: var(--gradient);
+        color: #fff;
       }
       .nav {
         display: flex;
@@ -142,20 +143,21 @@
       .brand {
         font-weight: 600;
         letter-spacing: 0.5px;
-        font-size: 20px;
-        line-height: 1;
-        color: var(--text);
-      }
-      .nav a {
-        font-size: 14px;
-        color: var(--muted);
-        padding: 8px 10px;
-        border-radius: 10px;
-      }
-      .nav a:hover {
-        color: var(--accent-1);
-        background: rgba(0, 0, 0, 0.05);
-      }
+          font-size: 20px;
+          line-height: 1;
+          color: #fff;
+        }
+        .nav a {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.85);
+          padding: 8px 10px;
+          border-radius: 10px;
+          transition: background 0.2s var(--ease), color 0.2s var(--ease);
+        }
+        .nav a:hover {
+          color: #fff;
+          background: rgba(255, 255, 255, 0.1);
+        }
 
       .switch {
         position: relative;
@@ -204,6 +206,11 @@
         line-height: 1.05;
         margin: 0 0 12px;
         letter-spacing: 0.4px;
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
       }
       .subtitle {
         color: var(--muted);
@@ -217,8 +224,8 @@
         font-size: 14px;
         padding: 10px 14px;
         border-radius: 999px;
-        border: 1px solid var(--line);
-        background: linear-gradient(180deg, #ffffff, #f5f5f7);
+        background: var(--gradient);
+        color: #fff;
         box-shadow: var(--shadow);
       }
       .cta-row {
@@ -234,27 +241,22 @@
         padding: 12px 16px;
         border-radius: 12px;
         font-weight: 600;
-        border: 1px solid var(--line);
-        background: linear-gradient(180deg, #ffffff, #f5f5f7);
+        border: none;
+        background: var(--gradient);
+        color: #fff;
         transition:
           transform 0.2s var(--ease),
-          border-color 0.2s var(--ease),
-          background 0.2s var(--ease);
+          filter 0.2s var(--ease);
       }
       .btn:hover {
         transform: translateY(-1px);
-        border-color: var(--line);
-        background: linear-gradient(180deg, #ffffff, #e5e5e7);
+        filter: brightness(1.1);
       }
       .btn.primary {
-        background: linear-gradient(90deg, var(--accent-1), var(--accent-1));
-        color: #fff;
-        border-color: var(--accent-1);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
       }
       .btn.primary:hover {
-        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-        background-color: var(--accent-1);
-        border-color: transparent;
+        filter: brightness(1.15);
       }
 
       #scroll-top {
@@ -485,24 +487,9 @@
 
       footer {
         padding: 36px 0 64px;
-        color: var(--muted);
+        background: var(--gradient);
+        color: #fff;
         text-align: center;
-      }
-
-      html.dark header {
-        background: rgba(0, 0, 0, 0.8);
-      }
-      html.dark .nav a:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-      html.dark .badge {
-        background: linear-gradient(180deg, #1c1c1e, #2c2c2e);
-      }
-      html.dark .btn:not(.primary) {
-        background: linear-gradient(180deg, #1c1c1e, #2c2c2e);
-      }
-      html.dark .btn:not(.primary):hover {
-        background: linear-gradient(180deg, #2c2c2e, #3a3a3c);
       }
       html.dark .chip {
         background: rgba(255, 255, 255, 0.1);
