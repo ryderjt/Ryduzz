@@ -847,7 +847,7 @@
           const grid = document.getElementById("reviews-grid");
           rows.forEach((row) => {
             const cols = row.split("\t");
-            const rating = parseInt(cols[1], 10) || 0;
+            const rating = (cols[1] || "").trim();
             const feedback = cols[2];
             const name = cols[3] || "Anonymous";
             const card = document.createElement("div");
@@ -856,7 +856,7 @@
             star.style.color = "#ffd166";
             star.style.letterSpacing = "2px";
             star.style.marginBottom = "6px";
-            star.textContent = "★".repeat(rating) + "☆".repeat(5 - rating);
+            star.textContent = rating || "☆☆☆☆☆";
             card.appendChild(star);
             const p = document.createElement("p");
             p.textContent = feedback;
