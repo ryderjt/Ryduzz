@@ -148,14 +148,17 @@
       }
       .brand span {
         display: inline-block;
-        animation: brand-bounce 0.6s var(--ease) infinite;
-        animation-delay: calc(var(--i) * 0.1s);
+        animation: brand-bounce 3s var(--ease) infinite;
+        animation-delay: calc(var(--i) * 0.3s - 3s);
       }
       @keyframes brand-bounce {
-        0%,
-        100% {
+        0%, 10%, 100% {
           transform: translateY(0);
         }
+        5% {
+          transform: translateY(-6px);
+        }
+      }
         50% {
           transform: translateY(-8px);
         }
