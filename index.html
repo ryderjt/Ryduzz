@@ -145,6 +145,28 @@
         font-size: 20px;
         line-height: 1;
         color: var(--text);
+        background: linear-gradient(
+          90deg,
+          var(--accent-1),
+          var(--accent-2),
+          var(--accent-1)
+        );
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: brand-gradient 6s var(--ease) infinite;
+      }
+      @keyframes brand-gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
       }
       .nav a {
         font-size: 14px;
