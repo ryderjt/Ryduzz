@@ -860,8 +860,14 @@
           const grid = document.getElementById("reviews-grid");
           rows.forEach((row) => {
             const cols = row.split("\t");
-            const rating =
-              ratingIdx >= 0 ? parseInt(cols[ratingIdx], 10) || 0 : 0;
+            const ratingRaw = ratingIdx >= 0 ? cols[ratingIdx].trim() : "";
+            let rating = 0;
+            if (ratingRaw) {
+              const stars = (ratingRaw.match(/★/g) || []).length;
+              rating =
+                stars > 0 ? stars : parseInt(ratingRaw.replace(/[^0-9]/g, ""), 10);
+            }
+            rating = Math.max(0, Math.min(5, rating || 0));
             const feedback = feedbackIdx >= 0 ? cols[feedbackIdx] : "";
             const name =
               nameIdx >= 0 && cols[nameIdx] ? cols[nameIdx] : "Anonymous";
