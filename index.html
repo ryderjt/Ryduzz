@@ -146,6 +146,20 @@
         line-height: 1;
         color: var(--text);
       }
+      .brand span {
+        display: inline-block;
+        animation: brand-bounce 0.6s var(--ease) infinite;
+        animation-delay: calc(var(--i) * 0.1s);
+      }
+      @keyframes brand-bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
       .nav a {
         font-size: 14px;
         color: var(--muted);
@@ -521,7 +535,14 @@
   <body>
     <header>
       <div class="container nav">
-        <div class="brand" aria-label="Site brand">RYDUZZ</div>
+        <div class="brand" aria-label="Site brand">
+          <span style="--i: 0">R</span>
+          <span style="--i: 1">Y</span>
+          <span style="--i: 2">D</span>
+          <span style="--i: 3">U</span>
+          <span style="--i: 4">Z</span>
+          <span style="--i: 5">Z</span>
+        </div>
         <nav aria-label="Primary">
           <a href="#about">About</a>
           <a href="#work">Work</a>
