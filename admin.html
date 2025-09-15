@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Owner Dashboard • ryduzz</title>
+    <meta
+      name="description"
+      content="Password protected owner dashboard for ryduzz with lightweight analytics."
+    />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <style>
+      :root {
+        --bg: #f5f5f7;
+        --card: #ffffff;
+        --text: #1d1d1f;
+        --muted: #6e6e73;
+        --line: #d2d2d7;
+        --accent: #0071e3;
+        --accent-2: #2997ff;
+        --radius: 16px;
+        --shadow: 0 14px 35px rgba(0, 0, 0, 0.12);
+        --maxw: 960px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.85);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .container {
+        width: min(100%, var(--maxw));
+        margin-inline: auto;
+        padding: 0 20px;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 0;
+      }
+
+      .brand {
+        font-weight: 600;
+        font-size: 20px;
+        letter-spacing: 0.6px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--muted);
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(0, 0, 0, 0.04);
+      }
+
+      main {
+        padding: 48px 0 80px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 28px;
+        margin-bottom: 28px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin-top: 0;
+      }
+
+      p {
+        line-height: 1.6;
+        font-size: 16px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      form {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      input[type="password"] {
+        padding: 12px 14px;
+        font-size: 16px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: inherit;
+      }
+
+      input[type="password"]:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+
+      button {
+        appearance: none;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1),
+          box-shadow 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        color: #fff;
+      }
+
+      button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+      }
+
+      button.secondary {
+        background: linear-gradient(180deg, #ffffff, #f5f5f7);
+        color: var(--text);
+        border: 1px solid var(--line);
+        box-shadow: none;
+      }
+
+      button.secondary:hover:not(:disabled) {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      button.danger {
+        background: linear-gradient(90deg, #ff5f57, #ff3b30);
+        color: #fff;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 18px 0;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 18px;
+        margin-top: 12px;
+      }
+
+      .stat-card {
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: var(--radius);
+        padding: 18px;
+        border: 1px solid var(--line);
+      }
+
+      .stat-card dl {
+        margin: 0;
+      }
+
+      .stat-card dt {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 6px;
+        color: var(--muted);
+      }
+
+      .stat-card dd {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 600;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      thead th {
+        font-size: 13px;
+        letter-spacing: 0.4px;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      tbody tr:hover {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      .badge-inline {
+        background: rgba(0, 0, 0, 0.08);
+        color: var(--muted);
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        margin-left: auto;
+        white-space: nowrap;
+      }
+
+      .event-list {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+        display: grid;
+        gap: 10px;
+      }
+
+      .event-list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      .error {
+        color: #ff3b30;
+        font-weight: 600;
+      }
+
+      details {
+        margin-top: 20px;
+      }
+
+      details summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.8);
+      }
+
+      .footer-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 0;
+      }
+
+      .secondary-link {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      ul.info-list {
+        margin: 12px 0 0;
+        padding-left: 20px;
+      }
+
+      @media (max-width: 640px) {
+        .nav {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .toolbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .stat-card dd {
+          font-size: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container nav">
+        <a class="brand" href="index.html" aria-label="Back to portfolio"
+          >RYDUZZ</a
+        >
+        <span class="badge" aria-hidden="true">Owner Dashboard</span>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="auth">
+        <div class="card">
+          <h1 style="margin-bottom: 10px">Unlock Owner Tools</h1>
+          <p class="muted">
+            Enter the owner password to view analytics captured in this browser
+            and access quick management actions.
+          </p>
+          <form id="login-form">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              placeholder="Enter owner password"
+              required
+            />
+            <button type="submit">Unlock dashboard</button>
+            <p id="auth-error" class="error" role="alert" hidden>
+              Incorrect password. Try again.
+            </p>
+          </form>
+          <details>
+            <summary>How do I change the password?</summary>
+            <p class="muted" style="margin-top: 10px">
+              Generate a SHA-256 hash of your new password and replace the
+              <code>PASSWORD_HASH</code> constant in <code>admin.html</code>.
+              Commit and redeploy to apply the change.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section id="dashboard" hidden>
+        <div class="card">
+          <h1 style="margin-bottom: 12px">Analytics Overview</h1>
+          <p class="muted" style="margin-bottom: 12px">
+            These metrics reflect interactions tracked on this browser. Clear the
+            data below to reset.
+          </p>
+          <div class="toolbar">
+            <button type="button" id="download-json" class="secondary">
+              Export JSON
+            </button>
+            <button type="button" id="refresh-btn" class="secondary">
+              Refresh
+            </button>
+            <button type="button" id="clear-data" class="danger">
+              Clear analytics
+            </button>
+            <button type="button" id="lock-dashboard" class="secondary">
+              Lock dashboard
+            </button>
+          </div>
+          <div id="storage-error" class="error" role="alert" hidden></div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <dl>
+                <dt>Total page views</dt>
+                <dd id="stat-views">0</dd>
+              </dl>
+            </div>
+            <div class="stat-card">
+              <dl>
+                <dt>Average session</dt>
+                <dd id="stat-avg-duration">—</dd>
+              </dl>
+            </div>
+            <div class="stat-card">
+              <dl>
+                <dt>Total time tracked</dt>
+                <dd id="stat-total-duration">—</dd>
+              </dl>
+            </div>
+            <div class="stat-card">
+              <dl>
+                <dt>Unique days</dt>
+                <dd id="stat-unique-days">0</dd>
+              </dl>
+            </div>
+          </div>
+          <p class="muted" id="stat-last-visit" style="margin-top: 16px">
+            No visits recorded yet.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>Call-to-action performance</h2>
+          <table aria-label="Call-to-action analytics">
+            <thead>
+              <tr>
+                <th scope="col">Action</th>
+                <th scope="col">Clicks</th>
+              </tr>
+            </thead>
+            <tbody id="cta-body"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2>Recent visits</h2>
+          <p class="muted" id="empty-state">No visits tracked yet.</p>
+          <table id="visits-table" hidden aria-label="Recent visits">
+            <thead>
+              <tr>
+                <th scope="col">Started</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Scroll depth</th>
+                <th scope="col">Theme</th>
+                <th scope="col">Events</th>
+              </tr>
+            </thead>
+            <tbody id="visits-body"></tbody>
+          </table>
+        </div>
+
+        <div class="card" id="latest-session-card" hidden>
+          <h2>Latest session activity</h2>
+          <ul id="event-list" class="event-list"></ul>
+        </div>
+
+        <div class="card">
+          <h2>Notes</h2>
+          <ul class="info-list muted">
+            <li>
+              Analytics are stored in <code>localStorage</code> on this device
+              only. Clearing browser data removes them.
+            </li>
+            <li>
+              This password gate is client-side only. Avoid placing sensitive data
+              here on public builds.
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container footer-content">
+        <p class="muted">© <span id="year"></span> ryduzz — Owner tools</p>
+        <a class="secondary-link" href="index.html">← Back to site</a>
+      </div>
+    </footer>
+
+    <script>
+      const YEAR_EL = document.getElementById("year");
+      if (YEAR_EL) {
+        YEAR_EL.textContent = new Date().getFullYear();
+      }
+
+      const ANALYTICS_KEY = "ryduzzAnalytics";
+      const AUTH_KEY = "ryduzzAdminAuth";
+      const PASSWORD_HASH = "8c633bc94bbfe9272ff7a99296ac294e9fbe78376489fa4f6a96d2535ff2a0cc"; // SHA-256 of "ryduzz-analytics-2024"
+
+      const authSection = document.getElementById("auth");
+      const dashboardSection = document.getElementById("dashboard");
+      const loginForm = document.getElementById("login-form");
+      const passwordInput = document.getElementById("password");
+      const authError = document.getElementById("auth-error");
+      const defaultAuthError = authError?.textContent || "Incorrect password.";
+      const storageErrorEl = document.getElementById("storage-error");
+
+      const statViews = document.getElementById("stat-views");
+      const statAvgDuration = document.getElementById("stat-avg-duration");
+      const statTotalDuration = document.getElementById("stat-total-duration");
+      const statUniqueDays = document.getElementById("stat-unique-days");
+      const statLastVisit = document.getElementById("stat-last-visit");
+      const ctaBody = document.getElementById("cta-body");
+      const visitsTable = document.getElementById("visits-table");
+      const visitsBody = document.getElementById("visits-body");
+      const emptyState = document.getElementById("empty-state");
+      const eventList = document.getElementById("event-list");
+      const latestSessionCard = document.getElementById("latest-session-card");
+      const downloadBtn = document.getElementById("download-json");
+      const refreshBtn = document.getElementById("refresh-btn");
+      const clearBtn = document.getElementById("clear-data");
+      const lockBtn = document.getElementById("lock-dashboard");
+
+      const CTA_ROWS = [
+        { label: "Hero • View Portfolio", key: "viewPortfolioClicks" },
+        { label: "Hero • Past Work link", key: "pastWorkClicks" },
+        { label: '"Hire Me" button', key: "hireMeClicks" },
+        { label: "Contact • Email button", key: "contactEmailClicks" },
+        { label: "Contact • Discord link", key: "discordClicks" },
+        { label: "Email copied", key: "copyEmail" },
+        { label: "Discord copied", key: "copyDiscord" },
+        { label: "Theme toggles", key: "themeToggles" },
+        { label: "Scroll-to-top", key: "scrollToTop" },
+      ];
+
+      const EVENT_LABELS = {
+        viewPortfolio: "Hero • View Portfolio clicked",
+        pastWork: "Hero • Past Work link opened",
+        hireMe: '\"Hire Me\" CTA clicked',
+        contactEmail: "Email button clicked",
+        discord: "Discord link opened",
+        copyEmail: "Email copied",
+        copyDiscord: "Discord handle copied",
+        themeToggle: "Theme toggled",
+        scrollTop: "Scroll-to-top used",
+      };
+
+      let lastAnalyticsData = null;
+
+      const analyticsDefaults = () => ({
+        version: 1,
+        visits: [],
+        totals: {
+          pageViews: 0,
+          totalDurationMs: 0,
+          viewPortfolioClicks: 0,
+          pastWorkClicks: 0,
+          hireMeClicks: 0,
+          contactEmailClicks: 0,
+          discordClicks: 0,
+          copyEmail: 0,
+          copyDiscord: 0,
+          themeToggles: 0,
+          scrollToTop: 0,
+        },
+        lastVisit: null,
+      });
+
+      function mergeWithDefaults(data) {
+        const base = analyticsDefaults();
+        if (!data) return base;
+        return {
+          ...base,
+          ...data,
+          totals: { ...base.totals, ...(data.totals || {}) },
+          visits: Array.isArray(data.visits)
+            ? data.visits
+                .map((visit) => ({
+                  ...visit,
+                  events: Array.isArray(visit.events) ? visit.events : [],
+                  durationMs:
+                    typeof visit.durationMs === "number"
+                      ? visit.durationMs
+                      : null,
+                  maxScrollPercent:
+                    typeof visit.maxScrollPercent === "number"
+                      ? visit.maxScrollPercent
+                      : 0,
+                }))
+                .slice(-50)
+            : [],
+        };
+      }
+
+      function resetAuthError() {
+        if (!authError) return;
+        authError.textContent = defaultAuthError;
+        authError.hidden = true;
+      }
+
+      function showAuthError(message) {
+        if (!authError) return;
+        authError.textContent = message || defaultAuthError;
+        authError.hidden = false;
+      }
+
+      function showStorageError(message) {
+        if (!storageErrorEl) return;
+        storageErrorEl.textContent = message;
+        storageErrorEl.hidden = false;
+      }
+
+      function clearStorageError() {
+        if (!storageErrorEl) return;
+        storageErrorEl.textContent = "";
+        storageErrorEl.hidden = true;
+      }
+
+      function formatNumber(value) {
+        if (typeof value !== "number" || !Number.isFinite(value)) return "0";
+        return value.toLocaleString();
+      }
+
+      function formatDuration(ms, { includeSeconds = true } = {}) {
+        if (typeof ms !== "number" || !Number.isFinite(ms) || ms <= 0) {
+          return "—";
+        }
+        const totalSeconds = Math.round(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        const parts = [];
+        if (hours) parts.push(`${hours}h`);
+        if (minutes) parts.push(`${minutes}m`);
+        if (includeSeconds) {
+          if (seconds || (!hours && !minutes)) {
+            parts.push(`${seconds}s`);
+          }
+        } else if (!hours && !minutes) {
+          parts.push(`${seconds}s`);
+        }
+        return parts.join(" ") || "0s";
+      }
+
+      function formatDate(isoString) {
+        if (!isoString) return "—";
+        const date = new Date(isoString);
+        if (Number.isNaN(date.getTime())) return isoString;
+        return date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function toTitle(value) {
+        if (!value) return "—";
+        return value.charAt(0).toUpperCase() + value.slice(1);
+      }
+
+      function formatEventOffset(iso, startedAt) {
+        if (!iso || !startedAt) return "";
+        const start = new Date(startedAt);
+        const eventTime = new Date(iso);
+        if (Number.isNaN(start.getTime()) || Number.isNaN(eventTime.getTime())) {
+          return eventTime.toLocaleTimeString();
+        }
+        const diffSeconds = Math.max(0, Math.round((eventTime - start) / 1000));
+        const minutes = Math.floor(diffSeconds / 60);
+        const seconds = diffSeconds % 60;
+        return `+${minutes}m ${seconds}s`;
+      }
+
+      function renderCtaTable(totals) {
+        if (!ctaBody) return;
+        ctaBody.innerHTML = "";
+        CTA_ROWS.forEach(({ label, key }) => {
+          const row = document.createElement("tr");
+          const action = document.createElement("td");
+          action.textContent = label;
+          const value = document.createElement("td");
+          value.textContent = formatNumber(totals?.[key] || 0);
+          row.appendChild(action);
+          row.appendChild(value);
+          ctaBody.appendChild(row);
+        });
+      }
+
+      function renderVisits(visits) {
+        if (!visitsTable || !visitsBody || !emptyState) return;
+        visitsBody.innerHTML = "";
+        if (!Array.isArray(visits) || visits.length === 0) {
+          visitsTable.hidden = true;
+          emptyState.hidden = false;
+          return;
+        }
+        const latest = visits.slice(-10).reverse();
+        latest.forEach((visit) => {
+          const row = document.createElement("tr");
+
+          const startedCell = document.createElement("td");
+          startedCell.textContent = formatDate(visit.startedAt);
+          row.appendChild(startedCell);
+
+          const durationCell = document.createElement("td");
+          durationCell.textContent = formatDuration(visit.durationMs, {
+            includeSeconds: true,
+          });
+          row.appendChild(durationCell);
+
+          const scrollCell = document.createElement("td");
+          const depth =
+            typeof visit.maxScrollPercent === "number"
+              ? Math.round(visit.maxScrollPercent)
+              : null;
+          scrollCell.textContent =
+            depth !== null && Number.isFinite(depth) ? `${depth}%` : "—";
+          row.appendChild(scrollCell);
+
+          const themeCell = document.createElement("td");
+          const startTheme = toTitle(visit.startTheme);
+          const endTheme = toTitle(visit.endTheme);
+          themeCell.textContent =
+            startTheme && endTheme
+              ? startTheme === endTheme
+                ? startTheme
+                : `${startTheme} → ${endTheme}`
+              : startTheme || endTheme || "—";
+          row.appendChild(themeCell);
+
+          const eventsCell = document.createElement("td");
+          const count = Array.isArray(visit.events) ? visit.events.length : 0;
+          eventsCell.textContent = formatNumber(count);
+          row.appendChild(eventsCell);
+
+          visitsBody.appendChild(row);
+        });
+        visitsTable.hidden = false;
+        emptyState.hidden = true;
+      }
+
+      function renderLatestEvents(visit) {
+        if (!latestSessionCard || !eventList) return;
+        eventList.innerHTML = "";
+        if (!visit || !Array.isArray(visit.events) || visit.events.length === 0) {
+          latestSessionCard.hidden = true;
+          return;
+        }
+        visit.events.forEach((event) => {
+          const li = document.createElement("li");
+          const label = EVENT_LABELS[event.type] || event.type;
+          const detailText =
+            typeof event.detail === "string" && event.detail
+              ? ` → ${event.detail}`
+              : "";
+          const badge = document.createElement("span");
+          badge.className = "badge-inline";
+          badge.textContent = formatEventOffset(event.at, visit.startedAt);
+          const textSpan = document.createElement("span");
+          textSpan.textContent = `${label}${detailText}`;
+          li.appendChild(textSpan);
+          if (badge.textContent) {
+            li.appendChild(badge);
+          }
+          eventList.appendChild(li);
+        });
+        latestSessionCard.hidden = false;
+      }
+
+      function renderAnalytics() {
+        clearStorageError();
+        let parsed;
+        try {
+          const raw = localStorage.getItem(ANALYTICS_KEY);
+          parsed = mergeWithDefaults(raw ? JSON.parse(raw) : null);
+        } catch (err) {
+          console.error("Failed to read analytics", err);
+          showStorageError("Unable to read analytics data from localStorage.");
+          return;
+        }
+
+        lastAnalyticsData = parsed;
+        const visits = parsed.visits || [];
+        const totals = parsed.totals || {};
+
+        const totalViews =
+          typeof totals.pageViews === "number" && totals.pageViews > 0
+            ? totals.pageViews
+            : visits.length;
+        if (statViews) {
+          statViews.textContent = formatNumber(totalViews);
+        }
+
+        const durationSamples = visits.filter(
+          (visit) => typeof visit.durationMs === "number" && visit.durationMs > 0,
+        );
+        const totalDuration =
+          typeof totals.totalDurationMs === "number" && totals.totalDurationMs > 0
+            ? totals.totalDurationMs
+            : durationSamples.reduce((sum, visit) => sum + visit.durationMs, 0);
+
+        if (statTotalDuration) {
+          statTotalDuration.textContent =
+            totalDuration > 0
+              ? formatDuration(totalDuration, { includeSeconds: false })
+              : "—";
+        }
+
+        const averageDuration =
+          durationSamples.length > 0
+            ? totalDuration / durationSamples.length
+            : 0;
+        if (statAvgDuration) {
+          statAvgDuration.textContent =
+            averageDuration > 0
+              ? formatDuration(averageDuration, { includeSeconds: true })
+              : "—";
+        }
+
+        if (statUniqueDays) {
+          const uniqueDays = new Set(
+            visits
+              .map((visit) => visit.startedAt)
+              .filter(Boolean)
+              .map((iso) => iso.slice(0, 10)),
+          ).size;
+          statUniqueDays.textContent = formatNumber(uniqueDays);
+        }
+
+        if (statLastVisit) {
+          const latestVisit = visits.length ? visits[visits.length - 1] : null;
+          const lastVisitIso = parsed.lastVisit || (latestVisit?.startedAt ?? null);
+          statLastVisit.textContent = lastVisitIso
+            ? `Last visit: ${formatDate(lastVisitIso)}`
+            : "No visits recorded yet.";
+        }
+
+        renderCtaTable(totals);
+        renderVisits(visits);
+        const latestVisitForEvents = visits.length
+          ? visits[visits.length - 1]
+          : null;
+        renderLatestEvents(latestVisitForEvents);
+      }
+
+      function downloadAnalytics() {
+        if (!lastAnalyticsData) {
+          showStorageError("No analytics data available to export yet.");
+          return;
+        }
+        try {
+          const blob = new Blob([JSON.stringify(lastAnalyticsData, null, 2)], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          const stamp = new Date().toISOString().slice(0, 10);
+          link.href = url;
+          link.download = `ryduzz-analytics-${stamp}.json`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error("Failed to export analytics", err);
+          showStorageError("Unable to export analytics as JSON.");
+        }
+      }
+
+      function clearAnalytics() {
+        const confirmed = window.confirm(
+          "Clear all analytics stored in this browser? This cannot be undone.",
+        );
+        if (!confirmed) return;
+        try {
+          localStorage.removeItem(ANALYTICS_KEY);
+          lastAnalyticsData = analyticsDefaults();
+          renderAnalytics();
+        } catch (err) {
+          console.error("Failed to clear analytics", err);
+          showStorageError("Unable to clear analytics data.");
+        }
+      }
+
+      function showDashboard() {
+        resetAuthError();
+        if (authSection) authSection.hidden = true;
+        if (dashboardSection) dashboardSection.hidden = false;
+        renderAnalytics();
+      }
+
+      function lockDashboard() {
+        sessionStorage.removeItem(AUTH_KEY);
+        if (dashboardSection) dashboardSection.hidden = true;
+        if (authSection) authSection.hidden = false;
+        if (passwordInput) {
+          passwordInput.value = "";
+          passwordInput.focus();
+        }
+      }
+
+      async function hashString(value) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(value);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+      }
+
+      loginForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        resetAuthError();
+        if (!passwordInput) return;
+        const password = passwordInput.value.trim();
+        if (!password) {
+          showAuthError("Password is required.");
+          return;
+        }
+        try {
+          const hash = await hashString(password);
+          if (hash === PASSWORD_HASH) {
+            sessionStorage.setItem(AUTH_KEY, "ok");
+            passwordInput.value = "";
+            showDashboard();
+          } else {
+            showAuthError("Incorrect password. Try again.");
+            passwordInput.focus();
+            passwordInput.select();
+          }
+        } catch (err) {
+          console.error("Password hashing failed", err);
+          showAuthError(
+            "Your browser does not support the Web Crypto API required for login.",
+          );
+        }
+      });
+
+      downloadBtn?.addEventListener("click", downloadAnalytics);
+      refreshBtn?.addEventListener("click", renderAnalytics);
+      clearBtn?.addEventListener("click", clearAnalytics);
+      lockBtn?.addEventListener("click", lockDashboard);
+
+      if (sessionStorage.getItem(AUTH_KEY) === "ok") {
+        showDashboard();
+      }
+    </script>
+  </body>
+</html>

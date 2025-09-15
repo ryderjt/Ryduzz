@@ -557,13 +557,14 @@
           >
           <a
             class="btn"
+            id="past-work-btn"
             href="https://drive.google.com/drive/folders/1yhpCQUQz16OSSIvKOt3jNoGMWS0DmQCS"
             target="_blank"
             rel="noopener"
             title="Portfolio on Google Drive"
             >Past Work</a
           >
-          <a class="btn" href="#contact">Hire Me</a>
+          <a class="btn" id="hire-me-btn" href="#contact">Hire Me</a>
         </div>
 
         <!-- Socials -->
@@ -778,8 +779,10 @@
                   margin-top: 8px;
                 "
               >
-                <a class="btn" href="mailto:ryderjt13@gmail.com">Email Me</a>
-                <a class="btn" href="https://discord.gg/SrZ2Um6KbA"
+                <a class="btn" id="email-cta" href="mailto:ryderjt13@gmail.com"
+                  >Email Me</a
+                >
+                <a class="btn" id="discord-cta" href="https://discord.gg/SrZ2Um6KbA"
                   >Discord Server</a
                 >
               </div>
@@ -797,6 +800,180 @@
       // Year
       document.getElementById("year").textContent = new Date().getFullYear();
 
+      // ------------------ Lightweight analytics ------------------
+      const ANALYTICS_KEY = "ryduzzAnalytics";
+      const analyticsDefaults = () => ({
+        version: 1,
+        visits: [],
+        totals: {
+          pageViews: 0,
+          totalDurationMs: 0,
+          viewPortfolioClicks: 0,
+          pastWorkClicks: 0,
+          hireMeClicks: 0,
+          contactEmailClicks: 0,
+          discordClicks: 0,
+          copyEmail: 0,
+          copyDiscord: 0,
+          themeToggles: 0,
+          scrollToTop: 0,
+        },
+        lastVisit: null,
+      });
+
+      let analyticsActive = true;
+      let analytics = null;
+      const eventTotalsMap = {
+        viewPortfolio: "viewPortfolioClicks",
+        pastWork: "pastWorkClicks",
+        hireMe: "hireMeClicks",
+        contactEmail: "contactEmailClicks",
+        discord: "discordClicks",
+        copyEmail: "copyEmail",
+        copyDiscord: "copyDiscord",
+        themeToggle: "themeToggles",
+        scrollTop: "scrollToTop",
+      };
+
+      function mergeWithDefaults(data) {
+        const base = analyticsDefaults();
+        if (!data) return base;
+        return {
+          ...base,
+          ...data,
+          totals: { ...base.totals, ...(data.totals || {}) },
+          visits: Array.isArray(data.visits)
+            ? data.visits
+                .map((visit) => ({
+                  ...visit,
+                  events: Array.isArray(visit.events) ? visit.events : [],
+                  durationMs:
+                    typeof visit.durationMs === "number"
+                      ? visit.durationMs
+                      : null,
+                  maxScrollPercent:
+                    typeof visit.maxScrollPercent === "number"
+                      ? visit.maxScrollPercent
+                      : 0,
+                }))
+                .slice(-50)
+            : [],
+        };
+      }
+
+      function persistAnalytics() {
+        if (!analyticsActive || !analytics) return;
+        try {
+          localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analytics));
+        } catch (err) {
+          analyticsActive = false;
+          console.warn("Analytics disabled (storage error)", err);
+        }
+      }
+
+      try {
+        const storedAnalytics = localStorage.getItem(ANALYTICS_KEY);
+        analytics = mergeWithDefaults(
+          storedAnalytics ? JSON.parse(storedAnalytics) : null,
+        );
+      } catch (err) {
+        analyticsActive = false;
+        console.warn("Analytics disabled (parse error)", err);
+      }
+
+      let currentVisit = null;
+      const sessionStart = Date.now();
+      let maxScrollPercent = 0;
+
+      if (analyticsActive && analytics) {
+        currentVisit = {
+          startedAt: new Date().toISOString(),
+          durationMs: null,
+          maxScrollPercent: 0,
+          events: [],
+          userAgent: navigator.userAgent,
+          startTheme: null,
+          endTheme: null,
+          viewport: `${window.innerWidth}x${window.innerHeight}`,
+          locale: navigator.language || navigator.userLanguage || "unknown",
+        };
+        analytics.totals.pageViews += 1;
+        analytics.lastVisit = currentVisit.startedAt;
+        analytics.visits.push(currentVisit);
+        if (analytics.visits.length > 50) {
+          analytics.visits = analytics.visits.slice(-50);
+        }
+        persistAnalytics();
+      } else {
+        analyticsActive = false;
+      }
+
+      function trackEvent(type, detail) {
+        if (!analyticsActive || !analytics || !currentVisit) return;
+        const event = {
+          type,
+          at: new Date().toISOString(),
+        };
+        if (detail !== undefined) {
+          event.detail = detail;
+        }
+        currentVisit.events.push(event);
+        const totalKey = eventTotalsMap[type];
+        if (totalKey && typeof analytics.totals[totalKey] === "number") {
+          analytics.totals[totalKey] += 1;
+        }
+        persistAnalytics();
+      }
+
+      function recordTheme(theme) {
+        if (!currentVisit) return;
+        if (currentVisit.startTheme === null) {
+          currentVisit.startTheme = theme;
+        }
+        currentVisit.endTheme = theme;
+      }
+
+      function updateScrollDepth() {
+        if (!analyticsActive || !currentVisit) return;
+        const doc = document.documentElement;
+        const total = doc.scrollHeight - window.innerHeight;
+        if (total <= 0) {
+          maxScrollPercent = 100;
+          currentVisit.maxScrollPercent = 100;
+          return;
+        }
+        const scrollTopValue = window.scrollY || doc.scrollTop || 0;
+        const progress = Math.min(100, (scrollTopValue / total) * 100);
+        if (progress > maxScrollPercent) {
+          maxScrollPercent = progress;
+          currentVisit.maxScrollPercent = Math.round(maxScrollPercent);
+        }
+      }
+
+      if (analyticsActive && currentVisit) {
+        updateScrollDepth();
+        window.addEventListener("scroll", updateScrollDepth, { passive: true });
+        window.addEventListener("resize", () => {
+          if (currentVisit) {
+            currentVisit.viewport = `${window.innerWidth}x${window.innerHeight}`;
+          }
+        });
+        const finalizeVisit = () => {
+          if (!currentVisit || currentVisit.durationMs !== null) return;
+          const duration = Date.now() - sessionStart;
+          currentVisit.durationMs = duration;
+          analytics.totals.totalDurationMs += duration;
+          currentVisit.maxScrollPercent = Math.round(maxScrollPercent);
+          currentVisit.endTheme =
+            document.documentElement.classList.contains("dark")
+              ? "dark"
+              : "light";
+          persistAnalytics();
+        };
+        window.addEventListener("pagehide", finalizeVisit, { once: true });
+        window.addEventListener("beforeunload", finalizeVisit, { once: true });
+      }
+
       // Theme toggle
       const themeToggle = document.getElementById("theme-toggle");
       const root = document.documentElement;
@@ -809,28 +986,55 @@
           mode === "dark" ? "#000000" : "#ffffff",
         );
         themeToggle.checked = mode === "dark";
+        recordTheme(mode);
       }
 
-      const stored = localStorage.getItem("theme");
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      setTheme(stored || (prefersDark ? "dark" : "light"));
+      const storedTheme = localStorage.getItem("theme");
+      const prefersDark = window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .matches;
+      const initialTheme = storedTheme || (prefersDark ? "dark" : "light");
+      setTheme(initialTheme);
 
       themeToggle.addEventListener("change", () => {
         const newTheme = themeToggle.checked ? "dark" : "light";
         setTheme(newTheme);
         localStorage.setItem("theme", newTheme);
+        trackEvent("themeToggle", newTheme);
       });
+
+      // CTA analytics hooks
+      const viewPortfolioBtn = document.getElementById("view-portfolio-btn");
+      if (viewPortfolioBtn) {
+        viewPortfolioBtn.addEventListener("click", () =>
+          trackEvent("viewPortfolio"),
+        );
+      }
+      const pastWorkBtn = document.getElementById("past-work-btn");
+      if (pastWorkBtn) {
+        pastWorkBtn.addEventListener("click", () => trackEvent("pastWork"));
+      }
+      const hireMeBtn = document.getElementById("hire-me-btn");
+      if (hireMeBtn) {
+        hireMeBtn.addEventListener("click", () => trackEvent("hireMe"));
+      }
+      const emailCta = document.getElementById("email-cta");
+      if (emailCta) {
+        emailCta.addEventListener("click", () => trackEvent("contactEmail"));
+      }
+      const discordCta = document.getElementById("discord-cta");
+      if (discordCta) {
+        discordCta.addEventListener("click", () => trackEvent("discord"));
+      }
 
       // Reveal on scroll
       const els = document.querySelectorAll(".reveal");
       const io = new IntersectionObserver(
         (entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              e.target.classList.add("in");
-              io.unobserve(e.target);
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("in");
+              io.unobserve(entry.target);
             }
           });
         },
@@ -876,14 +1080,25 @@
       document.querySelectorAll(".copy-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
           const sel = btn.getAttribute("data-copy");
-          const el = document.querySelector(sel);
+          const el = sel ? document.querySelector(sel) : null;
           if (!el) return;
           const text = el.textContent.replace(/^.*?:\s*/, "");
-          navigator.clipboard.writeText(text).then(() => {
-            const prev = btn.textContent;
-            btn.textContent = "Copied!";
-            setTimeout(() => (btn.textContent = prev), 1200);
-          });
+          const prev = btn.textContent;
+          navigator.clipboard
+            .writeText(text)
+            .then(() => {
+              btn.textContent = "Copied!";
+              setTimeout(() => (btn.textContent = prev), 1200);
+              if (sel === "#email-text") {
+                trackEvent("copyEmail");
+              } else if (sel === "#discord-text") {
+                trackEvent("copyDiscord");
+              }
+            })
+            .catch(() => {
+              btn.textContent = "Copy failed";
+              setTimeout(() => (btn.textContent = prev), 1500);
+            });
         });
       });
 
@@ -891,7 +1106,7 @@
       document.querySelectorAll('a[href^="#"]').forEach((a) => {
         a.addEventListener("click", (e) => {
           const id = a.getAttribute("href");
-          if (id.length > 1) {
+          if (id && id.length > 1) {
             e.preventDefault();
             document
               .querySelector(id)
@@ -901,10 +1116,9 @@
       });
 
       // ------------------ Carousel Logic ------------------
-      // Your two YouTube Shorts (first is default):
       const videos = [
-        "iebK6BgBzs4", // first (default)
-        "BL-ngsWZAD4", // second
+        "iebK6BgBzs4",
+        "BL-ngsWZAD4",
         "PnoWs7L8dDY",
       ];
 
@@ -997,6 +1211,7 @@
         }
       });
       scrollBtn.addEventListener("click", () => {
+        trackEvent("scrollTop");
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
 
