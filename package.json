@@ -1,0 +1,16 @@
+{
+  "name": "ryduzz",
+  "version": "1.0.0",
+  "description": "Portfolio site with a lightweight analytics API.",
+  "private": true,
+  "main": "api/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node api/server.js",
+    "dev": "node api/server.js",
+    "test": "echo \"No automated tests configured\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED"
+}

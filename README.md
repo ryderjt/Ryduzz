@@ -12,7 +12,24 @@ This repository hosts a static site served through GitHub Pages. Edit `index.htm
 
 ## Analytics Dashboard
 
-Client-side visit and click analytics are captured with `analytics.js` and can be reviewed on the password-protected admin panel at [`/admin.html`](admin.html). Use the password `ra1ph_` to unlock the dashboard. All analytics data is stored in the visitor's browser via `localStorage`, so clearing the dashboard only affects the current device.
+Visit and click events are streamed to a lightweight Node.js service (`api/server.js`) that persists aggregated analytics in `api/data/analytics.json`. Start the service locally with:
+
+```bash
+node api/server.js
+```
+
+Set `PORT`, `ADMIN_PASSWORD`, `ADMIN_PASSWORD_HASH`, or `ALLOWED_ORIGINS` environment variables as needed. By default the API listens on port `3000` and expects the admin password `ra1ph_` (or its SHA-256 hash).
+
+The front-end helper `analytics.js` sends data to the API and can be configured to point at a remote host before it loads:
+
+```html
+<script>
+  window.SITE_ANALYTICS_CONFIG = { baseUrl: 'https://your-analytics-host.example.com' };
+</script>
+<script src="analytics.js"></script>
+```
+
+The password-protected admin panel at [`/admin.html`](admin.html) pulls live data from the API using the same password. Clearing the dashboard now wipes the shared server-side record for all visitors.
 
 ## Deployment
 

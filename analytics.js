@@ -1,302 +1,210 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'ryduzz.analytics.v1';
-  const VISITOR_KEY = 'ryduzz.analytics.visitor';
-  const MAX_EVENT_LOG = 200;
+  const DEFAULT_DATA_ATTRIBUTE = 'analyticsId';
+  const DEFAULT_STORAGE_KEY = 'ryduzz.analytics.visitor';
+  const SESSION_KEY_PREFIX = 'ryduzz.analytics.session.';
+  const MAX_LABEL_LENGTH = 160;
 
-  function defaultData() {
-    return {
-      totals: { visits: 0, clicks: 0 },
-      visitors: {},
-      pages: {},
-      visits: [],
-      clicks: {},
-      clickEvents: [],
-      lastUpdated: null,
-      version: 1,
-    };
-  }
+  const DEFAULT_DATA = () => ({
+    totals: { visits: 0, clicks: 0 },
+    visitors: {},
+    pages: {},
+    visits: [],
+    clicks: {},
+    clickEvents: [],
+    lastUpdated: null,
+    version: 2,
+  });
 
-  const storageAvailable = checkStorage();
-  let useMemoryStore = !storageAvailable;
-  let memoryStore = defaultData();
-  let analyticsCache = normalizeData(readInitialData());
-  if (useMemoryStore) {
-    memoryStore = clone(analyticsCache);
-  }
+  const DEFAULT_CONFIG = {
+    baseUrl: '',
+    dataAttribute: DEFAULT_DATA_ATTRIBUTE,
+    storageKey: DEFAULT_STORAGE_KEY,
+    keepalive: true,
+    trackVisitOnInit: true,
+    trackClicks: true,
+    endpoints: {
+      summary: '/api/analytics',
+      visit: '/api/analytics/visit',
+      click: '/api/analytics/click',
+      clear: '/api/analytics/clear',
+    },
+  };
+
+  let config = mergeConfig(DEFAULT_CONFIG, window.SITE_ANALYTICS_CONFIG || {});
   let visitLogged = false;
   let clickListenerBound = false;
-  let fallbackVisitorId = null;
+  let memoryVisitorId = null;
+  let lastVisitPromise = null;
 
-  function checkStorage() {
-    try {
-      const testKey = '__analytics_test__';
-      window.localStorage.setItem(testKey, '1');
-      window.localStorage.removeItem(testKey);
-      return true;
-    } catch (err) {
-      console.warn('[Analytics] Local storage is not available; using in-memory store only.');
-      return false;
+  function mergeConfig(base, override) {
+    const result = { ...base, endpoints: { ...base.endpoints } };
+    if (!override || typeof override !== 'object') {
+      return result;
     }
-  }
 
-  function readInitialData() {
-    if (!storageAvailable) {
-      return defaultData();
+    if (Object.prototype.hasOwnProperty.call(override, 'baseUrl')) {
+      result.baseUrl = override.baseUrl || '';
     }
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        return defaultData();
-      }
-      return JSON.parse(raw);
-    } catch (err) {
-      console.warn('[Analytics] Failed to read stored analytics data.', err);
-      useMemoryStore = true;
-      return defaultData();
+    if (Object.prototype.hasOwnProperty.call(override, 'dataAttribute')) {
+      result.dataAttribute = override.dataAttribute || DEFAULT_DATA_ATTRIBUTE;
     }
-  }
+    if (Object.prototype.hasOwnProperty.call(override, 'storageKey')) {
+      result.storageKey = override.storageKey || DEFAULT_STORAGE_KEY;
+    }
+    if (Object.prototype.hasOwnProperty.call(override, 'keepalive')) {
+      result.keepalive = Boolean(override.keepalive);
+    }
+    if (Object.prototype.hasOwnProperty.call(override, 'trackVisitOnInit')) {
+      result.trackVisitOnInit = Boolean(override.trackVisitOnInit);
+    }
+    if (Object.prototype.hasOwnProperty.call(override, 'trackClicks')) {
+      result.trackClicks = Boolean(override.trackClicks);
+    }
 
-  function clone(value) {
-    return JSON.parse(JSON.stringify(value));
-  }
+    const overrideEndpoints =
+      override.endpoints && typeof override.endpoints === 'object'
+        ? override.endpoints
+        : {};
+    result.endpoints = { ...result.endpoints, ...overrideEndpoints };
 
-  function sanitizeVisitors(visitors) {
-    const result = {};
-    if (!visitors || typeof visitors !== 'object') return result;
-    for (const [id, value] of Object.entries(visitors)) {
-      if (!value || typeof value !== 'object') continue;
-      result[id] = {
-        id,
-        visitCount: Number(value.visitCount) || 0,
-        firstVisit: value.firstVisit || null,
-        lastVisit: value.lastVisit || null,
-        lastPath: value.lastPath || null,
-        languages:
-          value.languages && typeof value.languages === 'object'
-            ? value.languages
-            : {},
-      };
+    if (Object.prototype.hasOwnProperty.call(override, 'summaryEndpoint')) {
+      result.endpoints.summary = override.summaryEndpoint;
     }
+    if (Object.prototype.hasOwnProperty.call(override, 'visitEndpoint')) {
+      result.endpoints.visit = override.visitEndpoint;
+    }
+    if (Object.prototype.hasOwnProperty.call(override, 'clickEndpoint')) {
+      result.endpoints.click = override.clickEndpoint;
+    }
+    if (Object.prototype.hasOwnProperty.call(override, 'clearEndpoint')) {
+      result.endpoints.clear = override.clearEndpoint;
+    }
+
     return result;
   }
 
-  function sanitizePages(pages) {
-    const result = {};
-    if (!pages || typeof pages !== 'object') return result;
-    for (const [path, value] of Object.entries(pages)) {
-      if (!value || typeof value !== 'object') continue;
-      const visitors =
-        value.visitors && typeof value.visitors === 'object'
-          ? value.visitors
-          : {};
-      const uniqueVisitors =
-        typeof value.uniqueVisitors === 'number'
-          ? value.uniqueVisitors
-          : Object.keys(visitors).length;
-      const referrers =
-        value.referrers && typeof value.referrers === 'object'
-          ? value.referrers
-          : {};
-      result[path] = {
-        path,
-        title: value.title || '',
-        visits: Number(value.visits) || 0,
-        clicks: Number(value.clicks) || 0,
-        uniqueVisitors,
-        visitors,
-        referrers,
-        lastVisit: value.lastVisit || null,
-      };
-    }
-    return result;
+  function configure(overrides) {
+    config = mergeConfig(config, overrides || {});
+    return getConfig();
   }
 
-  function sanitizeVisits(visits) {
-    if (!Array.isArray(visits)) return [];
-    return visits
-      .filter((item) => item && typeof item === 'object')
-      .map((visit) => ({
-        timestamp: visit.timestamp || null,
-        path: visit.path || window.location.pathname,
-        referrer: visit.referrer || 'Direct',
-        visitorId: visit.visitorId || null,
-        title: visit.title || '',
-        language: visit.language || null,
-        userAgent: visit.userAgent || null,
-      }))
-      .slice(-MAX_EVENT_LOG);
-  }
-
-  function sanitizeClicks(clicks) {
-    const result = {};
-    if (!clicks || typeof clicks !== 'object') return result;
-    for (const [label, value] of Object.entries(clicks)) {
-      if (!value || typeof value !== 'object') continue;
-      const visitors =
-        value.visitors && typeof value.visitors === 'object'
-          ? value.visitors
-          : {};
-      const uniqueVisitors =
-        typeof value.uniqueVisitors === 'number'
-          ? value.uniqueVisitors
-          : Object.keys(visitors).length;
-      const pages =
-        value.pages && typeof value.pages === 'object' ? value.pages : {};
-      const hrefs = value.hrefs && typeof value.hrefs === 'object' ? value.hrefs : {};
-      result[label] = {
-        label,
-        count: Number(value.count) || 0,
-        firstTimestamp: value.firstTimestamp || null,
-        lastTimestamp: value.lastTimestamp || null,
-        pages,
-        visitors,
-        uniqueVisitors,
-        hrefs,
-      };
-    }
-    return result;
-  }
-
-  function sanitizeClickEvents(events) {
-    if (!Array.isArray(events)) return [];
-    return events
-      .filter((item) => item && typeof item === 'object')
-      .map((event) => ({
-        timestamp: event.timestamp || null,
-        path: event.path || window.location.pathname,
-        label: event.label || 'Unknown',
-        href: event.href || null,
-        visitorId: event.visitorId || null,
-      }))
-      .slice(-MAX_EVENT_LOG);
-  }
-
-  function normalizeData(raw) {
-    const base = defaultData();
-    if (!raw || typeof raw !== 'object') {
-      return base;
-    }
-    base.totals = {
-      visits: Number(raw.totals?.visits) || 0,
-      clicks: Number(raw.totals?.clicks) || 0,
+  function getConfig() {
+    return {
+      ...config,
+      endpoints: { ...config.endpoints },
     };
-    base.visitors = sanitizeVisitors(raw.visitors);
-    base.pages = sanitizePages(raw.pages);
-    base.visits = sanitizeVisits(raw.visits);
-    base.clicks = sanitizeClicks(raw.clicks);
-    base.clickEvents = sanitizeClickEvents(raw.clickEvents);
-    base.lastUpdated = raw.lastUpdated || null;
-    return base;
   }
 
-  function loadData() {
-    if (!useMemoryStore && storageAvailable) {
-      try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (!raw) {
-          analyticsCache = normalizeData(defaultData());
-        } else {
-          analyticsCache = normalizeData(JSON.parse(raw));
-        }
-        return analyticsCache;
-      } catch (err) {
-        console.warn('[Analytics] Failed to load data from storage; switching to memory store.', err);
-        useMemoryStore = true;
-        analyticsCache = normalizeData(memoryStore);
-        return analyticsCache;
+  function defaultData() {
+    return DEFAULT_DATA();
+  }
+
+  function toDataAttributeName(name) {
+    return String(name || '')
+      .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+      .replace(/[^a-z0-9-]+/gi, '-')
+      .replace(/-{2,}/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+  }
+
+  function sanitizeLabel(value) {
+    if (value === null || value === undefined) return '';
+    return String(value).replace(/\s+/g, ' ').trim().slice(0, MAX_LABEL_LENGTH);
+  }
+
+  function sanitizeHref(value) {
+    if (!value) return null;
+    return String(value).trim().slice(0, 400);
+  }
+
+  function getCurrentPath() {
+    if (typeof window === 'undefined') return '/';
+    const { pathname, search } = window.location || { pathname: '/', search: '' };
+    const path = `${pathname || ''}${search || ''}`;
+    return path || '/';
+  }
+
+  function getDatasetValue(element) {
+    if (!element) return '';
+    const key = config.dataAttribute || DEFAULT_DATA_ATTRIBUTE;
+    if (element.dataset && Object.prototype.hasOwnProperty.call(element.dataset, key)) {
+      return element.dataset[key];
+    }
+    const attrName = toDataAttributeName(key);
+    return element.getAttribute ? element.getAttribute(`data-${attrName}`) : '';
+  }
+
+  function isFetchSupported() {
+    return typeof window !== 'undefined' && typeof window.fetch === 'function';
+  }
+
+  function resolveUrl(path) {
+    if (!path) {
+      throw new Error('Missing endpoint path.');
+    }
+    const trimmed = String(path);
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+    const base = config.baseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    if (!base) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('/')) {
+      return `${base.replace(/\/$/, '')}${trimmed}`;
+    }
+    return `${base.replace(/\/$/, '')}/${trimmed}`;
+  }
+
+  async function sendRequest(endpoint, body, options) {
+    if (!isFetchSupported()) {
+      throw new Error('Fetch API is not available in this environment.');
+    }
+    const requestOptions = options && typeof options === 'object' ? { ...options } : {};
+    const method = (requestOptions.method || (body ? 'POST' : 'GET')).toUpperCase();
+    const url = resolveUrl(endpoint);
+
+    const headers = requestOptions.headers
+      ? { ...requestOptions.headers }
+      : {};
+    if (method !== 'GET' && method !== 'HEAD') {
+      headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+    }
+
+    const fetchOptions = {
+      method,
+      headers,
+      cache: 'no-store',
+      credentials: requestOptions.credentials || 'omit',
+    };
+
+    if (method !== 'GET' && method !== 'HEAD') {
+      fetchOptions.body = JSON.stringify(body || {});
+      if (config.keepalive && method === 'POST') {
+        fetchOptions.keepalive = true;
       }
     }
-    analyticsCache = normalizeData(memoryStore);
-    return analyticsCache;
-  }
 
-  function saveData(data) {
-    const normalized = normalizeData(data);
-    normalized.lastUpdated = normalized.lastUpdated || new Date().toISOString();
-    analyticsCache = normalized;
-    if (!useMemoryStore && storageAvailable) {
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-      } catch (err) {
-        console.warn('[Analytics] Failed to persist data; using in-memory store.', err);
-        useMemoryStore = true;
-        memoryStore = clone(normalized);
-      }
-    } else {
-      memoryStore = clone(normalized);
+    const response = await window.fetch(url, fetchOptions);
+    if (!response.ok) {
+      const error = new Error(`Request failed with status ${response.status}`);
+      error.status = response.status;
+      throw error;
     }
-    return analyticsCache;
-  }
-
-  function ensurePage(data, path, title) {
-    data.pages = data.pages || {};
-    if (!data.pages[path]) {
-      data.pages[path] = {
-        path,
-        title: title || '',
-        visits: 0,
-        clicks: 0,
-        uniqueVisitors: 0,
-        visitors: {},
-        referrers: {},
-        lastVisit: null,
-      };
+    if (response.status === 204) {
+      return null;
     }
-    const page = data.pages[path];
-    if (!page.visitors || typeof page.visitors !== 'object') {
-      page.visitors = {};
+    const text = await response.text();
+    if (!text) {
+      return null;
     }
-    if (!page.referrers || typeof page.referrers !== 'object') {
-      page.referrers = {};
-    }
-    if (typeof page.visits !== 'number') page.visits = Number(page.visits) || 0;
-    if (typeof page.clicks !== 'number') page.clicks = Number(page.clicks) || 0;
-    if (typeof page.uniqueVisitors !== 'number') {
-      page.uniqueVisitors = Object.keys(page.visitors).length;
-    }
-    if (title && !page.title) {
-      page.title = title;
-    }
-    return page;
-  }
-
-  function formatReferrer(referrer) {
-    if (!referrer) return 'Direct';
     try {
-      const url = new URL(referrer);
-      return url.hostname;
+      return JSON.parse(text);
     } catch (err) {
-      return referrer;
-    }
-  }
-
-  function getVisitorId() {
-    if (!useMemoryStore && storageAvailable) {
-      try {
-        let id = window.localStorage.getItem(VISITOR_KEY);
-        if (!id) {
-          id = generateVisitorId();
-          window.localStorage.setItem(VISITOR_KEY, id);
-        }
-        return id;
-      } catch (err) {
-        console.warn('[Analytics] Unable to access visitor id storage.', err);
-      }
-    }
-    try {
-      let id = window.sessionStorage.getItem(VISITOR_KEY);
-      if (!id) {
-        id = generateVisitorId();
-        window.sessionStorage.setItem(VISITOR_KEY, id);
-      }
-      return id;
-    } catch (err) {
-      if (!fallbackVisitorId) {
-        fallbackVisitorId = generateVisitorId();
-      }
-      return fallbackVisitorId;
+      return null;
     }
   }
 
@@ -304,220 +212,230 @@
     return `v-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
   }
 
-  function recordVisitInternal() {
-    if (visitLogged) return;
-    visitLogged = true;
+  function getVisitorId() {
+    const storageKey = config.storageKey || DEFAULT_STORAGE_KEY;
+    const sessionKey = `${SESSION_KEY_PREFIX}${storageKey}`;
+    if (typeof window === 'undefined') {
+      if (!memoryVisitorId) {
+        memoryVisitorId = generateVisitorId();
+      }
+      return memoryVisitorId;
+    }
+
+    try {
+      const stored = window.localStorage.getItem(storageKey);
+      if (stored) {
+        return stored;
+      }
+      const id = generateVisitorId();
+      window.localStorage.setItem(storageKey, id);
+      return id;
+    } catch (err) {
+      // ignore localStorage errors
+    }
+
+    try {
+      const stored = window.sessionStorage.getItem(sessionKey);
+      if (stored) {
+        return stored;
+      }
+      const id = generateVisitorId();
+      window.sessionStorage.setItem(sessionKey, id);
+      return id;
+    } catch (err) {
+      // ignore sessionStorage errors
+    }
+
+    if (!memoryVisitorId) {
+      memoryVisitorId = generateVisitorId();
+    }
+    return memoryVisitorId;
+  }
+
+  function buildVisitPayload(overrides = {}) {
     const now = new Date().toISOString();
-    const data = loadData();
-    const visitorId = getVisitorId();
-    const path = `${window.location.pathname}${window.location.search}` || window.location.pathname;
-    const referrer = formatReferrer(document.referrer || '');
-    const language = navigator.language || navigator.userLanguage || null;
-    const title = document.title || path;
-
-    data.totals.visits = (data.totals.visits || 0) + 1;
-
-    const visitor = data.visitors[visitorId] || {
-      id: visitorId,
-      visitCount: 0,
-      firstVisit: now,
-      languages: {},
+    const payload = {
+      visitorId: overrides.visitorId || getVisitorId(),
+      path: overrides.path || getCurrentPath(),
+      title:
+        overrides.title ||
+        (typeof document !== 'undefined' && document.title ? document.title : getCurrentPath()),
+      referrer:
+        overrides.referrer !== undefined
+          ? overrides.referrer
+          : typeof document !== 'undefined' && document.referrer
+            ? document.referrer
+            : '',
+      language:
+        overrides.language ||
+        (typeof navigator !== 'undefined'
+          ? navigator.language || navigator.userLanguage || null
+          : null),
+      userAgent:
+        overrides.userAgent ||
+        (typeof navigator !== 'undefined' ? navigator.userAgent || null : null),
+      timestamp: overrides.timestamp || now,
     };
-    visitor.visitCount += 1;
-    visitor.firstVisit = visitor.firstVisit || now;
-    visitor.lastVisit = now;
-    visitor.lastPath = path;
-    visitor.languages = visitor.languages || {};
-    if (language) {
-      const langKey = language.split(',')[0];
-      visitor.languages[langKey] = (visitor.languages[langKey] || 0) + 1;
-    }
-    data.visitors[visitorId] = visitor;
 
-    const page = ensurePage(data, path, title);
-    page.visits += 1;
-    page.lastVisit = now;
-    page.referrers = page.referrers || {};
-    page.referrers[referrer] = (page.referrers[referrer] || 0) + 1;
-    if (!page.visitors[visitorId]) {
-      page.visitors[visitorId] = 0;
-      page.uniqueVisitors += 1;
-    }
-    page.visitors[visitorId] += 1;
-
-    data.visits = data.visits || [];
-    data.visits.push({
-      timestamp: now,
-      path,
-      referrer,
-      visitorId,
-      title,
-      language,
-      userAgent: navigator.userAgent,
-    });
-    if (data.visits.length > MAX_EVENT_LOG) {
-      data.visits = data.visits.slice(-MAX_EVENT_LOG);
+    if (overrides.additional && typeof overrides.additional === 'object') {
+      payload.additional = overrides.additional;
     }
 
-    data.lastUpdated = now;
-
-    saveData(data);
+    return payload;
   }
 
-  function getClickableTarget(event) {
-    if (!event || !event.target) return null;
-    const clickable = event.target.closest(
-      '[data-analytics-id], a, button, [role="button"], label',
-    );
-    if (!clickable) return null;
-    const label =
-      clickable.getAttribute('data-analytics-id') ||
-      clickable.getAttribute('aria-label') ||
-      (clickable.id ? `#${clickable.id}` : '') ||
-      extractText(clickable) ||
-      clickable.tagName.toLowerCase();
-    if (!label) return null;
-    return {
-      label: sanitizeLabel(label),
-      href: clickable.href || null,
-      tagName: clickable.tagName.toLowerCase(),
+  function buildClickPayload(label, meta) {
+    const details = meta && typeof meta === 'object' ? meta : {};
+    const payload = {
+      label: sanitizeLabel(details.label || label),
+      visitorId: details.visitorId || getVisitorId(),
+      path: details.path || getCurrentPath(),
+      href: sanitizeHref(details.href || null),
+      timestamp: details.timestamp || new Date().toISOString(),
+      pageTitle:
+        details.title ||
+        (typeof document !== 'undefined' && document.title ? document.title : null),
     };
+
+    if (!payload.href && details.element && details.element.getAttribute) {
+      const attr = details.element.getAttribute('href');
+      if (attr) {
+        payload.href = sanitizeHref(details.element.href || attr);
+      }
+    }
+
+    return payload;
   }
 
-  function extractText(node) {
-    const text = (node.textContent || '').trim().replace(/\s+/g, ' ');
-    if (text) return text.slice(0, 80);
-    return null;
-  }
-
-  function sanitizeLabel(label) {
-    return label.replace(/\s+/g, ' ').trim().slice(0, 80);
-  }
-
-  function recordClickMeta(meta) {
-    if (!meta || !meta.label) return;
-    const now = new Date().toISOString();
-    const data = loadData();
-    const visitorId = getVisitorId();
-    const path = `${window.location.pathname}${window.location.search}` || window.location.pathname;
-    const page = ensurePage(data, path, document.title || path);
-
-    data.totals.clicks = (data.totals.clicks || 0) + 1;
-    page.clicks = (page.clicks || 0) + 1;
-
-    data.clicks = data.clicks || {};
-    const existing = data.clicks[meta.label] || {
-      label: meta.label,
-      count: 0,
-      firstTimestamp: now,
-      pages: {},
-      visitors: {},
-      uniqueVisitors: 0,
-      hrefs: {},
+  function bindClickTracking() {
+    if (clickListenerBound || typeof document === 'undefined') {
+      return;
+    }
+    const selector = `[data-${toDataAttributeName(config.dataAttribute || DEFAULT_DATA_ATTRIBUTE)}]`;
+    const listener = (event) => {
+      let target = event.target;
+      if (!target) return;
+      if (typeof target.closest === 'function') {
+        target = target.closest(selector);
+      } else {
+        while (target && target !== document && target.matches && !target.matches(selector)) {
+          target = target.parentElement;
+        }
+        if (!target || target === document || !target.matches || !target.matches(selector)) {
+          return;
+        }
+      }
+      if (!target) return;
+      const labelSource =
+        getDatasetValue(target) ||
+        target.getAttribute?.('aria-label') ||
+        target.getAttribute?.('title') ||
+        (target.textContent ? sanitizeLabel(target.textContent) : '');
+      const label = sanitizeLabel(labelSource);
+      if (!label) {
+        return;
+      }
+      const hrefValue = target.getAttribute ? target.getAttribute('href') : null;
+      recordClick(label, { href: hrefValue, element: target });
     };
-    existing.count += 1;
-    existing.lastTimestamp = now;
-    existing.pages = existing.pages || {};
-    existing.pages[path] = (existing.pages[path] || 0) + 1;
-    existing.visitors = existing.visitors || {};
-    if (!existing.visitors[visitorId]) {
-      existing.visitors[visitorId] = 0;
-      existing.uniqueVisitors = (existing.uniqueVisitors || 0) + 1;
-    }
-    existing.visitors[visitorId] += 1;
-    if (meta.href) {
-      existing.hrefs = existing.hrefs || {};
-      existing.hrefs[meta.href] = (existing.hrefs[meta.href] || 0) + 1;
-    }
-    data.clicks[meta.label] = existing;
 
-    data.clickEvents = data.clickEvents || [];
-    data.clickEvents.push({
-      timestamp: now,
-      path,
-      label: meta.label,
-      href: meta.href || null,
-      visitorId,
-    });
-    if (data.clickEvents.length > MAX_EVENT_LOG) {
-      data.clickEvents = data.clickEvents.slice(-MAX_EVENT_LOG);
-    }
-
-    data.lastUpdated = now;
-
-    saveData(data);
-  }
-
-  function handleClick(event) {
-    const meta = getClickableTarget(event);
-    if (!meta) return;
-    recordClickMeta(meta);
+    document.addEventListener('click', listener, true);
+    clickListenerBound = true;
   }
 
   function init(options) {
-    const opts = Object.assign(
-      {
-        trackVisit: true,
-        trackClicks: true,
-      },
-      options || {},
-    );
-
-    if (opts.trackVisit) {
-      if (document.readyState === 'loading') {
-        document.addEventListener(
-          'DOMContentLoaded',
-          () => recordVisitInternal(),
-          { once: true },
-        );
-      } else {
-        recordVisitInternal();
-      }
+    const currentConfig = configure(options || {});
+    if (currentConfig.trackVisitOnInit !== false) {
+      recordVisit({ once: true }).catch(() => {
+        /* swallow */
+      });
     }
-
-    if (opts.trackClicks && !clickListenerBound) {
-      document.addEventListener('click', handleClick, true);
-      clickListenerBound = true;
+    if (currentConfig.trackClicks) {
+      bindClickTracking();
     }
+    return getConfig();
   }
 
-  function clearData() {
-    analyticsCache = defaultData();
-    memoryStore = defaultData();
-    visitLogged = false;
-    if (!useMemoryStore && storageAvailable) {
-      try {
-        window.localStorage.removeItem(STORAGE_KEY);
-      } catch (err) {
-        console.warn('[Analytics] Failed to clear local storage.', err);
-      }
+  function recordVisit(options) {
+    const overrides = options && typeof options === 'object' ? { ...options } : {};
+    const once = overrides.once !== false;
+    if (once && visitLogged && lastVisitPromise) {
+      return lastVisitPromise;
     }
+    if (once) {
+      visitLogged = true;
+    }
+
+    const payload = buildVisitPayload(overrides);
+    lastVisitPromise = sendRequest(config.endpoints.visit, payload).catch((err) => {
+      console.warn('[Analytics] Failed to record visit.', err);
+      return null;
+    });
+    return lastVisitPromise;
   }
 
-  function getData() {
-    return clone(loadData());
+  function recordClick(label, meta) {
+    const payload = buildClickPayload(label, meta);
+    if (!payload.label) {
+      return Promise.resolve(null);
+    }
+    return sendRequest(config.endpoints.click, payload).catch((err) => {
+      console.warn('[Analytics] Failed to record click.', err);
+      return null;
+    });
+  }
+
+  async function getData() {
+    try {
+      const response = await sendRequest(config.endpoints.summary, null, {
+        method: 'GET',
+      });
+      if (response && typeof response === 'object') {
+        if (response.data && typeof response.data === 'object') {
+          return response.data;
+        }
+        return response;
+      }
+    } catch (err) {
+      console.warn('[Analytics] Failed to fetch analytics snapshot.', err);
+    }
+    return defaultData();
   }
 
   function exportData() {
     return getData();
   }
 
-  function recordEvent(label, options) {
-    if (!label) return;
-    const meta = {
-      label: sanitizeLabel(label),
-      href: options && options.href ? options.href : null,
-    };
-    recordClickMeta(meta);
+  async function clearData(secret) {
+    const payload =
+      secret && typeof secret === 'object'
+        ? secret
+        : { password: secret || null };
+    try {
+      const response = await sendRequest(config.endpoints.clear, payload, {
+        method: 'POST',
+      });
+      if (response && typeof response === 'object') {
+        return response.data || response;
+      }
+      return response;
+    } catch (err) {
+      console.warn('[Analytics] Failed to clear analytics data.', err);
+      throw err;
+    }
   }
 
   window.SiteAnalytics = {
     init,
-    recordVisit: recordVisitInternal,
-    recordEvent,
+    configure,
+    getConfig,
+    defaultData,
+    recordVisit,
+    recordEvent: recordClick,
+    recordClick,
     getData,
-    clearData,
     exportData,
-    version: '1.0.0',
+    clearData,
+    version: '2.0.0',
   };
 })();

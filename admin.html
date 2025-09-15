@@ -404,9 +404,8 @@
           <div>
             <h1>Analytics Dashboard</h1>
             <p class="muted">
-              Data is stored locally on each visitor's browser via
-              <code>localStorage</code>. Clearing the dashboard only removes the
-              copy saved on this device.
+              Analytics are stored centrally by the tracking service. Clearing
+              the dashboard removes the server-side history for every visitor.
             </p>
             <p class="muted small">Last updated <span id="last-updated">—</span></p>
           </div>
@@ -447,6 +446,18 @@
         const refreshBtn = document.getElementById('refresh-dashboard');
         const exportBtn = document.getElementById('export-data');
         const clearBtn = document.getElementById('clear-data');
+
+        if (window.SiteAnalytics) {
+          window.SiteAnalytics.configure({
+            trackVisitOnInit: false,
+            trackClicks: false,
+          });
+        }
+
+        let adminSecret = null;
+        let isLoading = false;
+        const loadingMarkup =
+          '<p class="muted">Loading latest analytics…</p>';
 
         const numberFormatter = new Intl.NumberFormat();
 
@@ -510,9 +521,9 @@
           return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
         }
 
-        function storeAuth() {
+        function storeAuth(secret) {
           try {
-            sessionStorage.setItem(AUTH_KEY, PASSWORD_HASH);
+            sessionStorage.setItem(AUTH_KEY, secret);
           } catch (err) {
             console.warn('Unable to persist admin session.', err);
           }
@@ -520,7 +531,12 @@
 
         function hasAuth() {
           try {
-            return sessionStorage.getItem(AUTH_KEY) === PASSWORD_HASH;
+            const stored = sessionStorage.getItem(AUTH_KEY);
+            if (stored && stored === PASSWORD_HASH) {
+              adminSecret = stored;
+              return true;
+            }
+            return false;
           } catch (err) {
             return false;
           }
@@ -549,7 +565,8 @@
           try {
             const hash = await hashPassword(password);
             if (hash === PASSWORD_HASH) {
-              storeAuth();
+              adminSecret = hash;
+              storeAuth(hash);
               passwordInput.value = '';
               showDashboard();
             } else {
@@ -591,7 +608,7 @@
             .slice(0, 6);
         }
 
-        function renderDashboard() {
+        async function renderDashboard() {
           if (!window.SiteAnalytics) {
             contentEl.innerHTML =
               '<p class="muted">Analytics module unavailable. Ensure analytics.js is loaded.</p>';
@@ -599,62 +616,72 @@
             lastUpdatedEl.textContent = 'Unavailable';
             return;
           }
+          if (isLoading) {
+            return;
+          }
 
-          const data = window.SiteAnalytics.getData();
-          const totalVisits = data.totals?.visits || 0;
-          const totalClicks = data.totals?.clicks || 0;
-          const uniqueVisitors = Object.keys(data.visitors || {}).length;
-          const pageEntries = Object.entries(data.pages || {}).map(([path, page]) => ({
-            path,
-            title: page.title || path,
-            visits: Number(page.visits) || 0,
-            uniqueVisitors:
-              typeof page.uniqueVisitors === 'number'
-                ? page.uniqueVisitors
-                : Object.keys(page.visitors || {}).length,
-            clicks: Number(page.clicks) || 0,
-            lastVisit: page.lastVisit || null,
-            referrers: page.referrers || {},
-          }));
-          pageEntries.sort((a, b) => b.visits - a.visits);
+          isLoading = true;
+          refreshBtn.disabled = true;
+          exportBtn.disabled = true;
+          clearBtn.disabled = true;
+          contentEl.innerHTML = loadingMarkup;
 
-          const clickEntries = Object.entries(data.clicks || {}).map(
-            ([label, info]) => {
-              const pages = Object.entries(info.pages || {}).sort(
-                (a, b) => b[1] - a[1],
-              );
-              return {
-                label,
-                count: Number(info.count) || 0,
-                uniqueVisitors:
-                  typeof info.uniqueVisitors === 'number'
-                    ? info.uniqueVisitors
-                    : Object.keys(info.visitors || {}).length,
-                lastTimestamp: info.lastTimestamp || null,
-                topPage: pages.length ? pages[0][0] : null,
-              };
-            },
-          );
-          clickEntries.sort((a, b) => b.count - a.count);
+          try {
+            const data = await window.SiteAnalytics.getData();
+            const totalVisits = data.totals?.visits || 0;
+            const totalClicks = data.totals?.clicks || 0;
+            const uniqueVisitors = Object.keys(data.visitors || {}).length;
+            const pageEntries = Object.entries(data.pages || {}).map(([path, page]) => ({
+              path,
+              title: page.title || path,
+              visits: Number(page.visits) || 0,
+              uniqueVisitors:
+                typeof page.uniqueVisitors === 'number'
+                  ? page.uniqueVisitors
+                  : Object.keys(page.visitors || {}).length,
+              clicks: Number(page.clicks) || 0,
+              lastVisit: page.lastVisit || null,
+              referrers: page.referrers || {},
+            }));
+            pageEntries.sort((a, b) => b.visits - a.visits);
 
-          const recentVisits = (data.visits || []).slice(-8).reverse();
-          const recentClicks = (data.clickEvents || []).slice(-8).reverse();
-          const referrers = aggregateReferrers(pageEntries);
-          const devices = aggregateDevices(data.visits || []);
+            const clickEntries = Object.entries(data.clicks || {}).map(
+              ([label, info]) => {
+                const pages = Object.entries(info.pages || {}).sort(
+                  (a, b) => b[1] - a[1],
+                );
+                return {
+                  label,
+                  count: Number(info.count) || 0,
+                  uniqueVisitors:
+                    typeof info.uniqueVisitors === 'number'
+                      ? info.uniqueVisitors
+                      : Object.keys(info.visitors || {}).length,
+                  lastTimestamp: info.lastTimestamp || null,
+                  topPage: pages.length ? pages[0][0] : null,
+                };
+              },
+            );
+            clickEntries.sort((a, b) => b.count - a.count);
 
-          const avgVisitsPerVisitor = uniqueVisitors
-            ? totalVisits / uniqueVisitors
-            : 0;
-          const avgClicksPerVisit = totalVisits ? totalClicks / totalVisits : 0;
-          const clickThrough = totalVisits ? (totalClicks / totalVisits) * 100 : 0;
+            const recentVisits = (data.visits || []).slice(-8).reverse();
+            const recentClicks = (data.clickEvents || []).slice(-8).reverse();
+            const referrers = aggregateReferrers(pageEntries);
+            const devices = aggregateDevices(data.visits || []);
 
-          lastUpdatedEl.textContent = formatDateTime(data.lastUpdated);
+            const avgVisitsPerVisitor = uniqueVisitors
+              ? totalVisits / uniqueVisitors
+              : 0;
+            const avgClicksPerVisit = totalVisits ? totalClicks / totalVisits : 0;
+            const clickThrough = totalVisits ? (totalClicks / totalVisits) * 100 : 0;
 
-          const pageRows = pageEntries.length
-          ? pageEntries
-              .slice(0, 6)
-              .map(
-                (page) => `
+            lastUpdatedEl.textContent = formatDateTime(data.lastUpdated);
+
+            const pageRows = pageEntries.length
+              ? pageEntries
+                  .slice(0, 6)
+                  .map(
+                    (page) => `
               <tr>
                 <td>
                   <div class="table-title">${escapeHTML(page.title)}</div>
@@ -666,15 +693,15 @@
                 <td>${formatDateTime(page.lastVisit)}</td>
               </tr>
             `,
-              )
-              .join('')
-          : '<tr><td class="empty" colspan="5">No visits recorded yet.</td></tr>';
+                  )
+                  .join('')
+              : '<tr><td class="empty" colspan="5">No visits recorded yet.</td></tr>';
 
-        const clickRows = clickEntries.length
-          ? clickEntries
-              .slice(0, 8)
-              .map(
-                (entry) => `
+            const clickRows = clickEntries.length
+              ? clickEntries
+                  .slice(0, 8)
+                  .map(
+                    (entry) => `
               <tr>
                 <td>${escapeHTML(entry.label)}</td>
                 <td>${formatNumber(entry.count)}</td>
@@ -683,19 +710,19 @@
                 <td>${formatDateTime(entry.lastTimestamp)}</td>
               </tr>
             `,
-              )
-              .join('')
-          : '<tr><td class="empty" colspan="5">No click interactions captured yet.</td></tr>';
+                  )
+                  .join('')
+              : '<tr><td class="empty" colspan="5">No click interactions captured yet.</td></tr>';
 
-        const visitItems = recentVisits.length
-          ? recentVisits
-              .map((visit) => {
-                const ref = visit.referrer
-                  ? visit.referrer === 'Direct'
-                    ? 'Direct / None'
-                    : visit.referrer
-                  : 'Direct / None';
-                return `
+            const visitItems = recentVisits.length
+              ? recentVisits
+                  .map((visit) => {
+                    const ref = visit.referrer
+                      ? visit.referrer === 'Direct'
+                        ? 'Direct / None'
+                        : visit.referrer
+                      : 'Direct / None';
+                    return `
               <li>
                 <strong>${escapeHTML(visit.title || visit.path)}</strong>
                 <div class="table-sub">${escapeHTML(visit.path)}</div>
@@ -706,13 +733,13 @@
                 </div>
               </li>
             `;
-              })
-              .join('')
-          : '<li class="empty">No visits logged yet.</li>';
+                  })
+                  .join('')
+              : '<li class="empty">No visits logged yet.</li>';
 
-        const clickItems = recentClicks.length
-          ? recentClicks
-              .map((click) => `
+            const clickItems = recentClicks.length
+              ? recentClicks
+                  .map((click) => `
               <li>
                 <strong>${escapeHTML(click.label)}</strong>
                 <div class="table-sub">${escapeHTML(click.path)}</div>
@@ -722,36 +749,36 @@
                 </div>
               </li>
             `)
-              .join('')
-          : '<li class="empty">No click activity logged yet.</li>';
+                  .join('')
+              : '<li class="empty">No click activity logged yet.</li>';
 
-        const referrerItems = referrers.length
-          ? referrers
-              .map(
-                ([name, count]) => `
+            const referrerItems = referrers.length
+              ? referrers
+                  .map(
+                    ([name, count]) => `
               <li>
                 <span>${escapeHTML(name)}</span>
                 <span>${formatNumber(count)}</span>
               </li>
             `,
-              )
-              .join('')
-          : '<li class="empty">No referrer data yet.</li>';
+                  )
+                  .join('')
+              : '<li class="empty">No referrer data yet.</li>';
 
-        const deviceItems = devices.length
-          ? devices
-              .map(
-                ([name, count]) => `
+            const deviceItems = devices.length
+              ? devices
+                  .map(
+                    ([name, count]) => `
               <li>
                 <span>${escapeHTML(name)}</span>
                 <span>${formatNumber(count)}</span>
               </li>
             `,
-              )
-              .join('')
-          : '<li class="empty">No device data yet.</li>';
+                  )
+                  .join('')
+              : '<li class="empty">No device data yet.</li>';
 
-        contentEl.innerHTML = `
+            contentEl.innerHTML = `
           <div class="metrics-grid">
             <div class="metric">
               <div class="metric-label">Total Visits</div>
@@ -842,41 +869,95 @@
           </div>
         `;
 
-        rawEl.textContent = JSON.stringify(data, null, 2);
-      }
+            rawEl.textContent = JSON.stringify(data, null, 2);
+          } catch (err) {
+            console.error('Failed to load analytics data', err);
+            contentEl.innerHTML =
+              '<p class="muted">Unable to load analytics right now. Ensure the analytics service is reachable.</p>';
+            rawEl.textContent = '';
+            lastUpdatedEl.textContent = 'Unavailable';
+          } finally {
+            refreshBtn.disabled = false;
+            exportBtn.disabled = false;
+            clearBtn.disabled = false;
+            isLoading = false;
+          }
+        }
 
       refreshBtn.addEventListener('click', () => {
         renderDashboard();
       });
 
-      exportBtn.addEventListener('click', () => {
+      exportBtn.addEventListener('click', async () => {
         if (!window.SiteAnalytics) return;
-        const data = window.SiteAnalytics.exportData();
-        const blob = new Blob([JSON.stringify(data, null, 2)], {
-          type: 'application/json',
-        });
-        const stamp = new Date()
-          .toISOString()
-          .replace(/[:.]/g, '-')
-          .slice(0, 19);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `ryduzz-analytics-${stamp}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 500);
+        const originalText = exportBtn.textContent;
+        exportBtn.disabled = true;
+        exportBtn.textContent = 'Exporting…';
+        try {
+          const data = await window.SiteAnalytics.exportData();
+          const blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: 'application/json',
+          });
+          const stamp = new Date()
+            .toISOString()
+            .replace(/[:.]/g, '-')
+            .slice(0, 19);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `ryduzz-analytics-${stamp}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 500);
+        } catch (err) {
+          console.error('Failed to export analytics', err);
+          window.alert('Failed to export analytics data. Please try again.');
+        } finally {
+          exportBtn.disabled = false;
+          exportBtn.textContent = originalText;
+        }
       });
 
-      clearBtn.addEventListener('click', () => {
+      clearBtn.addEventListener('click', async () => {
         if (!window.SiteAnalytics) return;
+        if (!adminSecret) {
+          window.alert('Your admin session expired. Please unlock the dashboard again.');
+          dashboard.classList.add('hidden');
+          authCard.classList.remove('hidden');
+          passwordInput.focus();
+          return;
+        }
         const confirmed = window.confirm(
-          'Clear all locally stored analytics data for this device? This action cannot be undone.',
+          'Clear all analytics data from the server? This action cannot be undone.',
         );
         if (!confirmed) return;
-        window.SiteAnalytics.clearData();
-        renderDashboard();
+        const originalText = clearBtn.textContent;
+        clearBtn.disabled = true;
+        clearBtn.textContent = 'Clearing…';
+        try {
+          await window.SiteAnalytics.clearData({ password: adminSecret });
+          await renderDashboard();
+        } catch (err) {
+          console.error('Failed to clear analytics data', err);
+          if (err && err.status === 401) {
+            window.alert('Admin credentials are no longer valid. Please unlock the dashboard again.');
+            try {
+              sessionStorage.removeItem(AUTH_KEY);
+            } catch (storageErr) {
+              console.warn('Unable to clear stored admin session.', storageErr);
+            }
+            adminSecret = null;
+            dashboard.classList.add('hidden');
+            authCard.classList.remove('hidden');
+            passwordInput.focus();
+          } else {
+            window.alert('Unable to clear analytics right now. Check the analytics service and try again.');
+          }
+        } finally {
+          clearBtn.disabled = false;
+          clearBtn.textContent = originalText;
+        }
       });
 
       form.addEventListener('submit', handleSubmit);
