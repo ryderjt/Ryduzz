@@ -523,12 +523,16 @@
       <div class="container nav">
         <div class="brand" aria-label="Site brand">RYDUZZ</div>
         <nav aria-label="Primary">
-          <a href="#about">About</a>
-          <a href="#work">Work</a>
-          <a href="#services">Services</a>
-          <a href="#reviews">Reviews</a>
-          <a href="#contact">Contact</a>
-          <label class="switch" aria-label="Toggle dark mode">
+          <a href="#about" data-analytics-id="nav-about">About</a>
+          <a href="#work" data-analytics-id="nav-work">Work</a>
+          <a href="#services" data-analytics-id="nav-services">Services</a>
+          <a href="#reviews" data-analytics-id="nav-reviews">Reviews</a>
+          <a href="#contact" data-analytics-id="nav-contact">Contact</a>
+          <label
+            class="switch"
+            aria-label="Toggle dark mode"
+            data-analytics-id="toggle-theme"
+          >
             <input type="checkbox" id="theme-toggle" />
             <span class="slider"></span>
           </label>
@@ -552,7 +556,11 @@
         </p>
 
         <div class="cta-row reveal">
-          <a class="btn primary" href="#work" id="view-portfolio-btn"
+          <a
+            class="btn primary"
+            href="#work"
+            id="view-portfolio-btn"
+            data-analytics-id="cta-view-portfolio"
             >View Portfolio</a
           >
           <a
@@ -561,9 +569,12 @@
             target="_blank"
             rel="noopener"
             title="Portfolio on Google Drive"
+            data-analytics-id="cta-past-work"
             >Past Work</a
           >
-          <a class="btn" href="#contact">Hire Me</a>
+          <a class="btn" href="#contact" data-analytics-id="cta-hire-me"
+            >Hire Me</a
+          >
         </div>
 
         <!-- Socials -->
@@ -574,6 +585,7 @@
             target="_blank"
             rel="noopener"
             aria-label="TikTok"
+            data-analytics-id="social-tiktok"
             >TikTok</a
           >
           <a
@@ -582,6 +594,7 @@
             target="_blank"
             rel="noopener"
             aria-label="Instagram"
+            data-analytics-id="social-instagram"
             >Instagram</a
           >
           <a
@@ -590,6 +603,7 @@
             target="_blank"
             rel="noopener"
             aria-label="CapCut"
+            data-analytics-id="social-capcut"
             >CapCut</a
           >
           <a
@@ -598,6 +612,7 @@
             target="_blank"
             rel="noopener"
             aria-label="YouTube"
+            data-analytics-id="social-youtube"
             >YouTube</a
           >
         </div>
@@ -653,16 +668,19 @@
                 class="card-vid side left"
                 id="vid-left"
                 aria-label="Previous video (click to open)"
+                data-analytics-id="carousel-left-preview"
               ></div>
               <div
                 class="card-vid side right"
                 id="vid-right"
                 aria-label="Next video (click to open)"
+                data-analytics-id="carousel-right-preview"
               ></div>
               <button
                 class="car-arrow car-prev"
                 id="car-prev"
                 aria-label="Previous video"
+                data-analytics-id="carousel-prev"
               >
                 ‹
               </button>
@@ -670,6 +688,7 @@
                 class="car-arrow car-next"
                 id="car-next"
                 aria-label="Next video"
+                data-analytics-id="carousel-next"
               >
                 ›
               </button>
@@ -683,6 +702,7 @@
               href="https://drive.google.com/drive/folders/1yhpCQUQz16OSSIvKOt3jNoGMWS0DmQCS?usp=drive_link"
               target="_blank"
               rel="noopener"
+              data-analytics-id="link-full-portfolio"
               >Full Portfolio</a
             >
           </div>
@@ -733,6 +753,7 @@
               target="_blank"
               rel="noopener"
               class="textlink"
+              data-analytics-id="reviews-feedback-form"
               >Want to leave a review? Fill out the form and share your experience.</a>
           </p>
         </div>
@@ -764,11 +785,23 @@
               <h3 style="margin-top: 0">Contact</h3>
               <p class="inline-copy" style="margin: 0 0 10px">
                 <span id="email-text">ryderjt13@gmail.com</span>
-                <button class="copy-btn" data-copy="#email-text">Copy</button>
+                <button
+                  class="copy-btn"
+                  data-copy="#email-text"
+                  data-analytics-id="copy-email"
+                >
+                  Copy
+                </button>
               </p>
               <p class="inline-copy" style="margin: 0 0 10px">
                 <span id="discord-text">Discord: ryduzzz</span>
-                <button class="copy-btn" data-copy="#discord-text">Copy</button>
+                <button
+                  class="copy-btn"
+                  data-copy="#discord-text"
+                  data-analytics-id="copy-discord"
+                >
+                  Copy
+                </button>
               </p>
               <div
                 style="
@@ -778,8 +811,16 @@
                   margin-top: 8px;
                 "
               >
-                <a class="btn" href="mailto:ryderjt13@gmail.com">Email Me</a>
-                <a class="btn" href="https://discord.gg/SrZ2Um6KbA"
+                <a
+                  class="btn"
+                  href="mailto:ryderjt13@gmail.com"
+                  data-analytics-id="contact-email"
+                  >Email Me</a
+                >
+                <a
+                  class="btn"
+                  href="https://discord.gg/SrZ2Um6KbA"
+                  data-analytics-id="contact-discord-server"
                   >Discord Server</a
                 >
               </div>
@@ -791,9 +832,20 @@
 
     <footer><span id="year"></span> ryduzz • Video Editor</footer>
 
-    <button id="scroll-top" aria-label="Scroll to top">↑</button>
+    <button
+      id="scroll-top"
+      aria-label="Scroll to top"
+      data-analytics-id="scroll-to-top"
+    >
+      ↑
+    </button>
 
+    <script src="analytics.js"></script>
     <script>
+      if (window.SiteAnalytics) {
+        window.SiteAnalytics.init();
+      }
+
       // Year
       document.getElementById("year").textContent = new Date().getFullYear();
 
