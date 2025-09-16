@@ -419,6 +419,55 @@
         border: 0;
       }
 
+      .card-review {
+        position: absolute;
+        top: 0;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        background: var(--card-2);
+        padding: 26px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        justify-content: space-between;
+        transition:
+          transform 0.5s var(--ease),
+          filter 0.5s var(--ease),
+          opacity 0.5s var(--ease),
+          z-index 0.5s var(--ease);
+      }
+      .card-review p {
+        margin: 0;
+      }
+      .review-rating {
+        color: #ffd166;
+        letter-spacing: 2px;
+        font-size: 18px;
+      }
+      .review-quote {
+        font-size: 16px;
+        line-height: 1.55;
+        color: var(--text);
+        flex: 1;
+      }
+      .review-author {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      #reviews .stage {
+        min-height: 240px;
+      }
+      #reviews .card-review {
+        overflow: hidden;
+      }
+      #reviews .card-review.center {
+        overflow-y: auto;
+      }
+      #reviews .stage.is-single .center {
+        width: 100%;
+      }
+
       .center {
         left: 50%;
         transform: translateX(-50%) scale(1);
@@ -726,7 +775,43 @@
       <section id="reviews">
         <div class="container">
           <h2 class="reveal">Reviews</h2>
-          <div id="reviews-grid" class="grid"></div>
+          <div
+            class="card reveal carousel"
+            aria-label="Reviews Carousel"
+            id="reviews-carousel"
+          >
+            <div class="stage" id="reviews-stage">
+              <div
+                class="card-review center"
+                id="review-center"
+                aria-label="Current review"
+              ></div>
+              <div
+                class="card-review side left"
+                id="review-left"
+                aria-label="Previous review (click to open)"
+              ></div>
+              <div
+                class="card-review side right"
+                id="review-right"
+                aria-label="Next review (click to open)"
+              ></div>
+              <button
+                class="car-arrow car-prev"
+                id="review-prev"
+                aria-label="Previous review"
+              >
+                ‹
+              </button>
+              <button
+                class="car-arrow car-next"
+                id="review-next"
+                aria-label="Next review"
+              >
+                ›
+              </button>
+            </div>
+          </div>
           <p class="reveal" style="margin-top: 16px; color: var(--muted)">
             <a
               href="https://forms.gle/ZkUCfJYZiiX8Jt5t6"
@@ -841,36 +926,207 @@
       // Load reviews from Google Sheets
       const SHEET_URL =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmZuh4Dlq-B722FEJc5LKQjslNLJDMUGvKLQM_M2nMlx81D4OUhy_4BKUFDuNm_rRSx8tnxTPZqnBg/pub?output=tsv";
+
+      const reviewCarousel = document.getElementById("reviews-carousel");
+      const reviewStage = document.getElementById("reviews-stage");
+      const reviewCenter = document.getElementById("review-center");
+      const reviewLeft = document.getElementById("review-left");
+      const reviewRight = document.getElementById("review-right");
+      const reviewPrev = document.getElementById("review-prev");
+      const reviewNext = document.getElementById("review-next");
+
+      const reviews = [];
+      let reviewCurrent = 0;
+
+      function setReviewCard(target, review) {
+        if (!target) return;
+        target.innerHTML = "";
+        if (!review) {
+          target.style.display = "none";
+          target.setAttribute("aria-hidden", "true");
+          target.onclick = null;
+          return;
+        }
+
+        target.style.display = "";
+        target.removeAttribute("aria-hidden");
+
+        const rating = review.rating?.trim();
+        const feedback = review.feedback?.trim();
+        const name = review.name?.trim();
+
+        if (rating) {
+          const ratingEl = document.createElement("div");
+          ratingEl.className = "review-rating";
+          ratingEl.textContent = rating;
+          target.appendChild(ratingEl);
+        }
+
+        if (feedback) {
+          const quoteEl = document.createElement("p");
+          quoteEl.className = "review-quote";
+          quoteEl.textContent = feedback;
+          target.appendChild(quoteEl);
+        }
+
+        if (name) {
+          const authorEl = document.createElement("p");
+          authorEl.className = "review-author";
+          authorEl.textContent = name.startsWith("—") ? name : `— ${name}`;
+          target.appendChild(authorEl);
+        }
+      }
+
+      function updateReviewStageHeight() {
+        if (!reviewStage) return;
+        requestAnimationFrame(() => {
+          const height = Math.max(reviewCenter?.scrollHeight || 0, 240);
+          reviewStage.style.height = height ? `${height}px` : "";
+        });
+      }
+
+      function showReviewMessage(message) {
+        if (!reviewStage) return;
+        reviewStage.classList.add("is-single");
+        setReviewCard(reviewLeft, null);
+        setReviewCard(reviewRight, null);
+        setReviewCard(reviewCenter, {
+          rating: "",
+          feedback: message,
+          name: "",
+        });
+        if (reviewPrev && reviewNext) {
+          reviewPrev.style.display = "none";
+          reviewNext.style.display = "none";
+          reviewPrev.disabled = true;
+          reviewNext.disabled = true;
+        }
+        if (reviewCarousel) {
+          reviewCarousel.setAttribute("data-state", "message");
+        }
+        updateReviewStageHeight();
+      }
+
+      function renderReviews() {
+        if (!reviewStage || !reviewPrev || !reviewNext) return;
+        if (!reviews.length) {
+          showReviewMessage("No reviews yet — want to share your experience?");
+          return;
+        }
+
+        if (reviewCarousel) {
+          reviewCarousel.setAttribute("data-state", "ready");
+        }
+
+        const len = reviews.length;
+        reviewCurrent = ((reviewCurrent % len) + len) % len;
+        const prevIndex = (reviewCurrent - 1 + len) % len;
+        const nextIndex = (reviewCurrent + 1) % len;
+
+        reviewStage.classList.toggle("is-single", len <= 1);
+
+        setReviewCard(reviewCenter, reviews[reviewCurrent]);
+        setReviewCard(reviewLeft, len > 1 ? reviews[prevIndex] : null);
+        setReviewCard(reviewRight, len > 1 ? reviews[nextIndex] : null);
+
+        if (len > 1) {
+          reviewPrev.style.display = "";
+          reviewNext.style.display = "";
+          reviewPrev.disabled = false;
+          reviewNext.disabled = false;
+
+          if (reviewLeft) {
+            reviewLeft.onclick = () => {
+              reviewCurrent = prevIndex;
+              renderReviews();
+            };
+          }
+          if (reviewRight) {
+            reviewRight.onclick = () => {
+              reviewCurrent = nextIndex;
+              renderReviews();
+            };
+          }
+        } else {
+          reviewPrev.style.display = "none";
+          reviewNext.style.display = "none";
+          reviewPrev.disabled = true;
+          reviewNext.disabled = true;
+          if (reviewLeft) reviewLeft.onclick = null;
+          if (reviewRight) reviewRight.onclick = null;
+        }
+
+        updateReviewStageHeight();
+      }
+
+      if (reviewCenter && reviewPrev && reviewNext) {
+        showReviewMessage("Loading reviews…");
+
+        reviewPrev.addEventListener("click", () => {
+          if (reviews.length <= 1) return;
+          reviewCurrent = (reviewCurrent - 1 + reviews.length) % reviews.length;
+          renderReviews();
+        });
+        reviewNext.addEventListener("click", () => {
+          if (reviews.length <= 1) return;
+          reviewCurrent = (reviewCurrent + 1) % reviews.length;
+          renderReviews();
+        });
+
+        let reviewStartX = null;
+        reviewCenter.addEventListener(
+          "touchstart",
+          (e) => {
+            reviewStartX = e.touches[0].clientX;
+          },
+          { passive: true },
+        );
+        reviewCenter.addEventListener(
+          "touchmove",
+          (e) => {
+            if (reviewStartX === null) return;
+            const dx = e.touches[0].clientX - reviewStartX;
+            if (Math.abs(dx) > 40) {
+              (dx < 0 ? reviewNext : reviewPrev).click();
+              reviewStartX = null;
+            }
+          },
+          { passive: true },
+        );
+
+        window.addEventListener("resize", updateReviewStageHeight);
+      }
+
       fetch(SHEET_URL)
         .then((r) => r.text())
         .then((text) => {
           const rows = text.trim().split("\n").slice(1);
-          const grid = document.getElementById("reviews-grid");
           rows.forEach((row) => {
+            if (!row.trim()) return;
             const cols = row.split("\t");
             const rating = (cols[1] || "").trim();
-            const feedback = cols[2];
-            const name = cols[3] || "Anonymous";
-            const card = document.createElement("div");
-            card.className = "card span-4 reveal";
-            const star = document.createElement("div");
-            star.style.color = "#ffd166";
-            star.style.letterSpacing = "2px";
-            star.style.marginBottom = "6px";
-            star.textContent = rating || "☆☆☆☆☆";
-            card.appendChild(star);
-            const p = document.createElement("p");
-            p.textContent = feedback;
-            card.appendChild(p);
-            const author = document.createElement("p");
-            author.style.color = "var(--muted)";
-            author.textContent = `— ${name}`;
-            card.appendChild(author);
-            grid.appendChild(card);
-            io.observe(card);
+            const feedback = (cols[2] || "").trim();
+            const name = (cols[3] || "Anonymous").trim() || "Anonymous";
+            if (!feedback) return;
+
+            reviews.push({
+              rating: rating || "☆☆☆☆☆",
+              feedback,
+              name,
+            });
           });
+
+          if (reviews.length) {
+            reviewCurrent = 0;
+            renderReviews();
+          } else {
+            showReviewMessage("No reviews yet — want to share your experience?");
+          }
         })
-        .catch((err) => console.error("Failed to load reviews", err));
+        .catch((err) => {
+          console.error("Failed to load reviews", err);
+          showReviewMessage("Unable to load reviews right now.");
+        });
 
       // Copy to clipboard
       document.querySelectorAll(".copy-btn").forEach((btn) => {
@@ -957,12 +1213,30 @@
 
       // Keyboard nav when section is in view
       document.addEventListener("keydown", (e) => {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+
         const work = document.getElementById("work");
-        const rect = work.getBoundingClientRect();
-        const inView = rect.top < window.innerHeight && rect.bottom > 0;
-        if (!inView) return;
-        if (e.key === "ArrowLeft") prevBtn.click();
-        if (e.key === "ArrowRight") nextBtn.click();
+        const reviewsSection = document.getElementById("reviews");
+
+        const workRect = work.getBoundingClientRect();
+        const workInView =
+          workRect.top < window.innerHeight && workRect.bottom > 0;
+
+        if (workInView) {
+          (e.key === "ArrowLeft" ? prevBtn : nextBtn).click();
+          e.preventDefault();
+          return;
+        }
+
+        if (reviewPrev && reviewNext && reviewsSection) {
+          const reviewsRect = reviewsSection.getBoundingClientRect();
+          const reviewsInView =
+            reviewsRect.top < window.innerHeight && reviewsRect.bottom > 0;
+          if (reviewsInView) {
+            (e.key === "ArrowLeft" ? reviewPrev : reviewNext).click();
+            e.preventDefault();
+          }
+        }
       });
 
       // Touch swipe on center
