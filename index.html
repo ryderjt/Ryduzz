@@ -370,6 +370,75 @@
         color: var(--muted);
       }
 
+      /* Reviews carousel */
+      .reviews-carousel {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--radius);
+      }
+      .reviews-carousel::before,
+      .reviews-carousel::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 60px;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .reviews-carousel::after {
+        right: 0;
+        background: linear-gradient(
+          to left,
+          var(--bg),
+          rgba(255, 255, 255, 0)
+        );
+      }
+      .reviews-carousel::before {
+        left: 0;
+        background: linear-gradient(
+          to right,
+          var(--bg),
+          rgba(255, 255, 255, 0)
+        );
+      }
+      .reviews-track {
+        --scroll-distance: 100%;
+        --scroll-duration: 40s;
+        display: flex;
+        gap: 18px;
+        padding: 6px 0;
+        width: max-content;
+        animation: reviews-scroll var(--scroll-duration) linear infinite;
+      }
+      .reviews-carousel:hover .reviews-track,
+      .reviews-carousel:focus .reviews-track,
+      .reviews-carousel:focus-within .reviews-track {
+        animation-play-state: paused;
+      }
+      .reviews-carousel:focus-visible {
+        outline: 2px solid var(--accent-1);
+        outline-offset: 4px;
+      }
+      .review-card {
+        flex: 0 0 clamp(260px, 28vw, 360px);
+      }
+      @keyframes reviews-scroll {
+        to {
+          transform: translateX(calc(-1 * var(--scroll-distance)));
+        }
+      }
+      @media (max-width: 600px) {
+        .review-card {
+          flex-basis: clamp(220px, 80vw, 280px);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .reviews-track {
+          animation: none;
+        }
+      }
+
       /* Embeds */
       .embed {
         position: relative;
@@ -726,7 +795,22 @@
       <section id="reviews">
         <div class="container">
           <h2 class="reveal">Reviews</h2>
-          <div id="reviews-grid" class="grid"></div>
+          <div
+            class="reviews-carousel reveal"
+            id="reviews-carousel"
+            aria-label="Client reviews"
+            tabindex="0"
+          >
+            <div class="reviews-track" id="reviews-track" role="list"></div>
+          </div>
+          <p
+            id="reviews-empty"
+            class="reveal"
+            style="margin-top: 16px; color: var(--muted);"
+            hidden
+          >
+            Reviews are on the way—check back soon.
+          </p>
           <p class="reveal" style="margin-top: 16px; color: var(--muted)">
             <a
               href="https://forms.gle/ZkUCfJYZiiX8Jt5t6"
@@ -841,36 +925,111 @@
       // Load reviews from Google Sheets
       const SHEET_URL =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmZuh4Dlq-B722FEJc5LKQjslNLJDMUGvKLQM_M2nMlx81D4OUhy_4BKUFDuNm_rRSx8tnxTPZqnBg/pub?output=tsv";
+      const reviewsCarousel = document.getElementById("reviews-carousel");
+      const reviewsTrack = document.getElementById("reviews-track");
+      const reviewsEmpty = document.getElementById("reviews-empty");
+
+      const showReviewsFallback = () => {
+        if (reviewsCarousel) {
+          reviewsCarousel.style.display = "none";
+        }
+        if (reviewsEmpty) {
+          reviewsEmpty.style.display = "block";
+          reviewsEmpty.removeAttribute("hidden");
+          io.observe(reviewsEmpty);
+        }
+      };
+
       fetch(SHEET_URL)
         .then((r) => r.text())
         .then((text) => {
+          if (!reviewsTrack) return;
+
           const rows = text.trim().split("\n").slice(1);
-          const grid = document.getElementById("reviews-grid");
-          rows.forEach((row) => {
-            const cols = row.split("\t");
-            const rating = (cols[1] || "").trim();
-            const feedback = cols[2];
-            const name = cols[3] || "Anonymous";
+          const entries = rows
+            .map((row) => {
+              const cols = row.split("\t");
+              const rating = (cols[1] || "").trim();
+              const feedback = (cols[2] || "").trim();
+              const name = (cols[3] || "Anonymous").trim();
+              if (!feedback) return null;
+              return { rating, feedback, name };
+            })
+            .filter(Boolean);
+
+          if (!entries.length) {
+            showReviewsFallback();
+            return;
+          }
+
+          reviewsTrack.innerHTML = "";
+
+          const fragment = document.createDocumentFragment();
+          entries.forEach(({ rating, feedback, name }) => {
             const card = document.createElement("div");
-            card.className = "card span-4 reveal";
+            card.className = "card review-card";
+            card.setAttribute("role", "listitem");
+
             const star = document.createElement("div");
             star.style.color = "#ffd166";
             star.style.letterSpacing = "2px";
             star.style.marginBottom = "6px";
             star.textContent = rating || "☆☆☆☆☆";
             card.appendChild(star);
+
             const p = document.createElement("p");
             p.textContent = feedback;
             card.appendChild(p);
+
             const author = document.createElement("p");
             author.style.color = "var(--muted)";
             author.textContent = `— ${name}`;
             card.appendChild(author);
-            grid.appendChild(card);
-            io.observe(card);
+
+            fragment.appendChild(card);
           });
+          reviewsTrack.appendChild(fragment);
+
+          const baseWidth = reviewsTrack.scrollWidth;
+          if (!baseWidth) {
+            showReviewsFallback();
+            return;
+          }
+
+          const originals = Array.from(reviewsTrack.children);
+          originals.forEach((card) => {
+            const clone = card.cloneNode(true);
+            clone.setAttribute("aria-hidden", "true");
+            reviewsTrack.appendChild(clone);
+          });
+
+          const carouselWidth = reviewsCarousel?.offsetWidth || 0;
+          let currentWidth = reviewsTrack.scrollWidth;
+          const minWidth = carouselWidth + baseWidth;
+          while (currentWidth < minWidth) {
+            originals.forEach((card) => {
+              const clone = card.cloneNode(true);
+              clone.setAttribute("aria-hidden", "true");
+              reviewsTrack.appendChild(clone);
+            });
+            currentWidth = reviewsTrack.scrollWidth;
+          }
+
+          const SPEED = 40;
+          const duration = Math.max(baseWidth / SPEED, 20);
+          reviewsTrack.style.setProperty(
+            "--scroll-distance",
+            `${baseWidth}px`,
+          );
+          reviewsTrack.style.setProperty(
+            "--scroll-duration",
+            `${duration}s`,
+          );
         })
-        .catch((err) => console.error("Failed to load reviews", err));
+        .catch((err) => {
+          console.error("Failed to load reviews", err);
+          showReviewsFallback();
+        });
 
       // Copy to clipboard
       document.querySelectorAll(".copy-btn").forEach((btn) => {
