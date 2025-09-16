@@ -341,6 +341,59 @@
         transform: translateY(-4px);
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
       }
+      .reviews-carousel {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .reviews-window {
+        overflow: hidden;
+        flex: 1;
+      }
+      .reviews-track {
+        display: flex;
+        gap: 18px;
+      }
+      .review-card {
+        flex: 1 1 0;
+        min-width: 0;
+        height: 100%;
+      }
+      .review-rating {
+        color: #ffd166;
+        letter-spacing: 2px;
+        margin-bottom: 6px;
+      }
+      .review-text {
+        margin: 0 0 10px;
+      }
+      .review-author {
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+      .reviews-arrow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--line);
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 24px;
+        line-height: 1;
+        transition: background 0.3s var(--ease);
+      }
+      .reviews-arrow:hover {
+        background: rgba(0, 0, 0, 0.08);
+      }
+      .reviews-arrow:focus-visible {
+        outline: 2px solid var(--accent-1);
+        outline-offset: 2px;
+      }
       .span-4 {
         grid-column: span 4;
       }
@@ -472,6 +525,15 @@
         color: var(--text);
       }
 
+      @media (max-width: 720px) {
+        .reviews-carousel {
+          gap: 10px;
+        }
+        .reviews-track {
+          gap: 12px;
+        }
+      }
+
       /* Reveal on scroll */
       .reveal {
         opacity: 0;
@@ -514,6 +576,12 @@
         background: rgba(255, 255, 255, 0.1);
       }
       html.dark .car-arrow:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      html.dark .reviews-arrow {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      html.dark .reviews-arrow:hover {
         background: rgba(255, 255, 255, 0.2);
       }
     </style>
@@ -726,7 +794,30 @@
       <section id="reviews">
         <div class="container">
           <h2 class="reveal">Reviews</h2>
-          <div id="reviews-grid" class="grid"></div>
+          <div
+            class="reviews-carousel reveal"
+            aria-label="Client reviews carousel"
+          >
+            <button
+              class="reviews-arrow"
+              id="reviews-prev"
+              aria-label="Previous review"
+              type="button"
+            >
+              &lsaquo;
+            </button>
+            <div class="reviews-window">
+              <div id="reviews-track" class="reviews-track"></div>
+            </div>
+            <button
+              class="reviews-arrow"
+              id="reviews-next"
+              aria-label="Next review"
+              type="button"
+            >
+              &rsaquo;
+            </button>
+          </div>
           <p class="reveal" style="margin-top: 16px; color: var(--muted)">
             <a
               href="https://forms.gle/ZkUCfJYZiiX8Jt5t6"
@@ -841,34 +932,104 @@
       // Load reviews from Google Sheets
       const SHEET_URL =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmZuh4Dlq-B722FEJc5LKQjslNLJDMUGvKLQM_M2nMlx81D4OUhy_4BKUFDuNm_rRSx8tnxTPZqnBg/pub?output=tsv";
+      const reviewsTrack = document.getElementById("reviews-track");
+      const reviewsPrev = document.getElementById("reviews-prev");
+      const reviewsNext = document.getElementById("reviews-next");
+      let reviewsData = [];
+      let reviewIndex = 0;
+      let lastVisibleCount = 0;
+
+      function createReviewCard(review) {
+        const card = document.createElement("div");
+        card.className = "card review-card";
+
+        const ratingEl = document.createElement("div");
+        ratingEl.className = "review-rating";
+        ratingEl.textContent = review.rating || "☆☆☆☆☆";
+        card.appendChild(ratingEl);
+
+        if (review.feedback) {
+          const feedbackEl = document.createElement("p");
+          feedbackEl.className = "review-text";
+          feedbackEl.textContent = review.feedback;
+          card.appendChild(feedbackEl);
+        }
+
+        const authorEl = document.createElement("p");
+        authorEl.className = "review-author";
+        authorEl.textContent = `— ${review.name}`;
+        card.appendChild(authorEl);
+
+        return card;
+      }
+
+      function getVisibleReviewCount() {
+        if (window.innerWidth >= 960) return 3;
+        if (window.innerWidth >= 640) return 2;
+        return 1;
+      }
+
+      function renderReviews() {
+        if (!reviewsTrack || !reviewsData.length) return;
+        reviewsTrack.innerHTML = "";
+        const visible = Math.min(reviewsData.length, getVisibleReviewCount());
+        lastVisibleCount = visible;
+        for (let i = 0; i < visible; i += 1) {
+          const review = reviewsData[(reviewIndex + i) % reviewsData.length];
+          reviewsTrack.appendChild(createReviewCard(review));
+        }
+      }
+
+      function shiftReviews(step) {
+        if (reviewsData.length <= 1) return;
+        const len = reviewsData.length;
+        reviewIndex = (reviewIndex + step + len) % len;
+        renderReviews();
+      }
+
+      if (reviewsPrev) {
+        reviewsPrev.addEventListener("click", () => shiftReviews(-1));
+      }
+      if (reviewsNext) {
+        reviewsNext.addEventListener("click", () => shiftReviews(1));
+      }
+
+      window.addEventListener("resize", () => {
+        if (!reviewsData.length) return;
+        const visibleNow = Math.min(
+          reviewsData.length,
+          getVisibleReviewCount(),
+        );
+        if (visibleNow !== lastVisibleCount) {
+          renderReviews();
+        }
+      });
+
       fetch(SHEET_URL)
         .then((r) => r.text())
         .then((text) => {
           const rows = text.trim().split("\n").slice(1);
-          const grid = document.getElementById("reviews-grid");
-          rows.forEach((row) => {
-            const cols = row.split("\t");
-            const rating = (cols[1] || "").trim();
-            const feedback = cols[2];
-            const name = cols[3] || "Anonymous";
-            const card = document.createElement("div");
-            card.className = "card span-4 reveal";
-            const star = document.createElement("div");
-            star.style.color = "#ffd166";
-            star.style.letterSpacing = "2px";
-            star.style.marginBottom = "6px";
-            star.textContent = rating || "☆☆☆☆☆";
-            card.appendChild(star);
-            const p = document.createElement("p");
-            p.textContent = feedback;
-            card.appendChild(p);
-            const author = document.createElement("p");
-            author.style.color = "var(--muted)";
-            author.textContent = `— ${name}`;
-            card.appendChild(author);
-            grid.appendChild(card);
-            io.observe(card);
-          });
+          reviewsData = rows
+            .map((row) => {
+              const cols = row.split("\t");
+              const ratingRaw = (cols[1] || "").trim();
+              const feedback = (cols[2] || "").trim();
+              const nameRaw = (cols[3] || "").trim();
+              if (!ratingRaw && !feedback && !nameRaw) {
+                return null;
+              }
+              return {
+                rating: ratingRaw || "☆☆☆☆☆",
+                feedback,
+                name: nameRaw || "Anonymous",
+              };
+            })
+            .filter(Boolean);
+
+          if (reviewsData.length) {
+            reviewIndex = 0;
+            renderReviews();
+          }
         })
         .catch((err) => console.error("Failed to load reviews", err));
 
