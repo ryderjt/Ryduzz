@@ -828,7 +828,7 @@
           </p>
           <p class="reveal" style="margin-top: 16px; color: var(--muted)">
             <a
-              href="https://forms.gle/ZkUCfJYZiiX8Jt5t6"
+              href="https://forms.gle/ytrzM7RFfa929fpy8"
               target="_blank"
               rel="noopener"
               class="textlink"
@@ -939,7 +939,7 @@
 
       // Load reviews from Google Sheets
       const SHEET_URL =
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmZuh4Dlq-B722FEJc5LKQjslNLJDMUGvKLQM_M2nMlx81D4OUhy_4BKUFDuNm_rRSx8tnxTPZqnBg/pub?output=tsv";
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz8JdTJqWIm7xFpY2KbdlgmJOGktJRVW_uTDq0WjGahM8tEkO1qxaNFYGqdcrWQsYtTado6sy6GBZ-/pub?output=csv";
       const reviewsCarousel = document.getElementById("reviews-carousel");
       const reviewsTrack = document.getElementById("reviews-track");
       const reviewsEmpty = document.getElementById("reviews-empty");
@@ -955,20 +955,96 @@
         }
       };
 
+      const normalizeLink = (value) => {
+        const trimmed = (value || "").trim();
+        if (!trimmed) return "";
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        if (/^[a-z]+:/i.test(trimmed)) return "";
+        return `https://${trimmed}`;
+      };
+
+      const parseCSV = (text) => {
+        const rows = [];
+        let current = [];
+        let value = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < text.length; i += 1) {
+          const char = text[i];
+
+          if (inQuotes) {
+            if (char === "\"") {
+              if (text[i + 1] === "\"") {
+                value += "\"";
+                i += 1;
+              } else {
+                inQuotes = false;
+              }
+            } else {
+              value += char;
+            }
+            continue;
+          }
+
+          if (char === "\"") {
+            inQuotes = true;
+            continue;
+          }
+
+          if (char === ",") {
+            current.push(value);
+            value = "";
+            continue;
+          }
+
+          if (char === "\r") {
+            continue;
+          }
+
+          if (char === "\n") {
+            current.push(value);
+            rows.push(current);
+            current = [];
+            value = "";
+            continue;
+          }
+
+          value += char;
+        }
+
+        current.push(value);
+        rows.push(current);
+
+        return rows.filter((row) =>
+          row.some((cell) => (cell || "").trim() !== ""),
+        );
+      };
+
       fetch(SHEET_URL)
         .then((r) => r.text())
         .then((text) => {
           if (!reviewsTrack) return;
 
-          const rows = text.trim().split("\n").slice(1);
+          const cleaned = text.replace(/^\uFEFF/, "");
+          const rows = parseCSV(cleaned);
+          if (!rows.length) {
+            showReviewsFallback();
+            return;
+          }
+          rows.shift();
           const entries = rows
             .map((row) => {
-              const cols = row.split("\t");
-              const rating = (cols[1] || "").trim();
-              const feedback = (cols[2] || "").trim();
-              const name = (cols[3] || "Anonymous").trim();
+              const rating = (row[1] || "").trim();
+              const feedback = (row[2] || "").trim();
+              const page = normalizeLink(row[3]);
+              const rawName = (row[4] || "").trim();
               if (!feedback) return null;
-              return { rating, feedback, name };
+              return {
+                rating,
+                feedback,
+                displayName: rawName || "Anonymous",
+                page,
+              };
             })
             .filter(Boolean);
 
@@ -979,8 +1055,16 @@
 
           reviewsTrack.innerHTML = "";
 
+          if (reviewsEmpty) {
+            reviewsEmpty.style.display = "none";
+            reviewsEmpty.setAttribute("hidden", "");
+          }
+          if (reviewsCarousel) {
+            reviewsCarousel.style.display = "";
+          }
+
           const fragment = document.createDocumentFragment();
-          entries.forEach(({ rating, feedback, name }) => {
+          entries.forEach(({ rating, feedback, displayName, page }) => {
             const card = document.createElement("div");
             card.className = "card review-card";
             card.setAttribute("role", "listitem");
@@ -998,7 +1082,18 @@
 
             const author = document.createElement("p");
             author.style.color = "var(--muted)";
-            author.textContent = `— ${name}`;
+            if (page) {
+              author.append("— ");
+              const link = document.createElement("a");
+              link.href = page;
+              link.target = "_blank";
+              link.rel = "noopener";
+              link.className = "textlink";
+              link.textContent = displayName;
+              author.appendChild(link);
+            } else {
+              author.textContent = `— ${displayName}`;
+            }
             card.appendChild(author);
 
             fragment.appendChild(card);
