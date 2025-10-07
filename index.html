@@ -968,7 +968,13 @@
         .then((text) => {
           if (!reviewsTrack) return;
 
-          const rows = text.trim().split("\n").slice(1);
+          const cleaned = text.replace(/^\uFEFF/, "");
+          const rows = parseCSV(cleaned);
+          if (!rows.length) {
+            showReviewsFallback();
+            return;
+          }
+          rows.shift();
           const entries = rows
             .map((row) => {
               const cols = row.split("\t");
@@ -994,6 +1000,14 @@
           }
 
           reviewsTrack.innerHTML = "";
+
+          if (reviewsEmpty) {
+            reviewsEmpty.style.display = "none";
+            reviewsEmpty.setAttribute("hidden", "");
+          }
+          if (reviewsCarousel) {
+            reviewsCarousel.style.display = "";
+          }
 
           const fragment = document.createDocumentFragment();
           entries.forEach(({ rating, feedback, displayName, page, linkText }) => {
