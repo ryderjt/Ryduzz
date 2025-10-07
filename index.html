@@ -828,7 +828,7 @@
           </p>
           <p class="reveal" style="margin-top: 16px; color: var(--muted)">
             <a
-              href="https://forms.gle/ytrzM7RFfa929fpy8"
+              href="https://docs.google.com/forms/d/e/1FAIpQLSeBI8nKArTk1y2eQlbgLgX8u0cnG3EmcmtMy8jduF1YCJTqGA/viewform?usp=header"
               target="_blank"
               rel="noopener"
               class="textlink"
@@ -939,7 +939,7 @@
 
       // Load reviews from Google Sheets
       const SHEET_URL =
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz8JdTJqWIm7xFpY2KbdlgmJOGktJRVW_uTDq0WjGahM8tEkO1qxaNFYGqdcrWQsYtTado6sy6GBZ-/pub?output=csv";
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz8JdTJqWIm7xFpY2KbdlgmJOGktJRVW_uTDq0WjGahM8tEkO1qxaNFYGqdcrWQsYtTado6sy6GBZ-/pub?output=tsv";
       const reviewsCarousel = document.getElementById("reviews-carousel");
       const reviewsTrack = document.getElementById("reviews-track");
       const reviewsEmpty = document.getElementById("reviews-empty");
@@ -958,66 +958,9 @@
       const normalizeLink = (value) => {
         const trimmed = (value || "").trim();
         if (!trimmed) return "";
+        if (/^[a-z]+:/i.test(trimmed)) return trimmed;
         if (/^https?:\/\//i.test(trimmed)) return trimmed;
-        if (/^[a-z]+:/i.test(trimmed)) return "";
         return `https://${trimmed}`;
-      };
-
-      const parseCSV = (text) => {
-        const rows = [];
-        let current = [];
-        let value = "";
-        let inQuotes = false;
-
-        for (let i = 0; i < text.length; i += 1) {
-          const char = text[i];
-
-          if (inQuotes) {
-            if (char === "\"") {
-              if (text[i + 1] === "\"") {
-                value += "\"";
-                i += 1;
-              } else {
-                inQuotes = false;
-              }
-            } else {
-              value += char;
-            }
-            continue;
-          }
-
-          if (char === "\"") {
-            inQuotes = true;
-            continue;
-          }
-
-          if (char === ",") {
-            current.push(value);
-            value = "";
-            continue;
-          }
-
-          if (char === "\r") {
-            continue;
-          }
-
-          if (char === "\n") {
-            current.push(value);
-            rows.push(current);
-            current = [];
-            value = "";
-            continue;
-          }
-
-          value += char;
-        }
-
-        current.push(value);
-        rows.push(current);
-
-        return rows.filter((row) =>
-          row.some((cell) => (cell || "").trim() !== ""),
-        );
       };
 
       fetch(SHEET_URL)
@@ -1034,15 +977,18 @@
           rows.shift();
           const entries = rows
             .map((row) => {
-              const rating = (row[1] || "").trim();
-              const feedback = (row[2] || "").trim();
-              const page = normalizeLink(row[3]);
-              const rawName = (row[4] || "").trim();
+              const cols = row.split("\t");
+              const rawName = (cols[1] || "").trim();
+              const rating = (cols[2] || "").trim();
+              const feedback = (cols[3] || "").trim();
+              const page = normalizeLink(cols[4]);
               if (!feedback) return null;
               return {
                 rating,
                 feedback,
                 displayName: rawName || "Anonymous",
+                linkText:
+                  rawName || (page ? page.replace(/^https?:\/\//i, "") : "View page"),
                 page,
               };
             })
@@ -1064,7 +1010,7 @@
           }
 
           const fragment = document.createDocumentFragment();
-          entries.forEach(({ rating, feedback, displayName, page }) => {
+          entries.forEach(({ rating, feedback, displayName, page, linkText }) => {
             const card = document.createElement("div");
             card.className = "card review-card";
             card.setAttribute("role", "listitem");
@@ -1089,7 +1035,7 @@
               link.target = "_blank";
               link.rel = "noopener";
               link.className = "textlink";
-              link.textContent = displayName;
+              link.textContent = linkText;
               author.appendChild(link);
             } else {
               author.textContent = `— ${displayName}`;
