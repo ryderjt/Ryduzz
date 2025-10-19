@@ -1087,6 +1087,136 @@
           showReviewsFallback();
         });
 
+      // Preset dropdown layout and Baritone cancellation fixes
+      (() => {
+        const presetSelectors = [
+          "[data-role=\"preset-dropdown\"]",
+          "#preset-dropdown",
+          "#preset-select",
+          ".preset-dropdown",
+        ];
+        const stopSelectors = [
+          "[data-action=\"stop-all-nodetrees\"]",
+          "#stop-all-nodetrees",
+          ".stop-all-nodetrees",
+        ];
+
+        const queryElement = (selectors) =>
+          selectors.reduce(
+            (found, selector) => found || document.querySelector(selector),
+            null,
+          );
+
+        const normaliseLayout = (preset, stopBtn) => {
+          if (!preset || !stopBtn) return;
+
+          const container =
+            preset.closest("[data-controls]") ||
+            stopBtn.closest("[data-controls]") ||
+            (preset.parentElement === stopBtn.parentElement
+              ? preset.parentElement
+              : stopBtn.parentElement);
+
+          if (container) {
+            container.style.display = "flex";
+            container.style.flexWrap = "wrap";
+            container.style.alignItems = "center";
+            container.style.gap = "12px";
+          }
+
+          preset.style.position = "relative";
+          preset.style.margin = "0";
+          preset.style.flex = "0 1 auto";
+          preset.style.zIndex = "";
+        };
+
+        const cancelBaritoneCommands = () => {
+          const candidates = [
+            window.baritoneController,
+            window.baritone,
+            window.Baritone,
+            window.baritoneClient,
+          ].filter(Boolean);
+
+          for (const candidate of candidates) {
+            const methods = [
+              "cancelAll",
+              "stopAll",
+              "cancelEverything",
+              "stopEverything",
+              "cancel",
+              "stop",
+              "terminateAll",
+              "terminate",
+            ];
+
+            for (const method of methods) {
+              if (typeof candidate[method] === "function") {
+                candidate[method]();
+                return true;
+              }
+            }
+
+            if (
+              candidate.processManager &&
+              typeof candidate.processManager.cancelAll === "function"
+            ) {
+              candidate.processManager.cancelAll();
+              return true;
+            }
+          }
+
+          window.dispatchEvent(new CustomEvent("baritone:cancel"));
+          return false;
+        };
+
+        const setup = () => {
+          const preset = queryElement(presetSelectors);
+          const stopBtn = queryElement(stopSelectors);
+          if (!preset || !stopBtn) return false;
+
+          normaliseLayout(preset, stopBtn);
+
+          if (!stopBtn.dataset.baritoneHooked) {
+            stopBtn.addEventListener("click", () => {
+              cancelBaritoneCommands();
+            });
+            stopBtn.dataset.baritoneHooked = "true";
+          }
+
+          return true;
+        };
+
+        const init = () => {
+          if (setup()) return;
+
+          if (!document.body) return;
+
+          if (typeof MutationObserver !== "function") {
+            const poll = setInterval(() => {
+              if (setup()) {
+                clearInterval(poll);
+              }
+            }, 120);
+            return;
+          }
+
+          const observer = new MutationObserver(() => {
+            if (setup()) {
+              observer.disconnect();
+            }
+          });
+
+          observer.observe(document.body, { childList: true, subtree: true });
+        };
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init, { once: true });
+        } else {
+          init();
+        }
+      })();
+
       // Copy to clipboard
       document.querySelectorAll(".copy-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
